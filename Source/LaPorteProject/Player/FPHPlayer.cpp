@@ -32,3 +32,11 @@ void AFPHPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 
 }
 
+void AFPHPlayer::MoveForward(float Value)
+{
+}
+
+void AFPHPlayer::MoveRight(float Value)
+{
+}
+
