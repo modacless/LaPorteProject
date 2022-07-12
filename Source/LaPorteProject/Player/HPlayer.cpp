@@ -29,13 +29,29 @@ void AHPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	PlayerInputComponent->BindAxis("MoveForward", this, &AHPlayer::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &AHPlayer::MoveRight);
+
+	PlayerInputComponent->BindAxis("Turn", this, &AHPlayer::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("LookUp", this, &AHPlayer::AddControllerPitchInput);
+
 }
 
 void AHPlayer::MoveForward(float Value)
 {
+	const FRotator  Rotation = Controller->GetControlRotation();
+	const FRotator  Direction(0.f,Rotation.Yaw, 0.f);
+	const FVector ForwardDirection = FRotationMatrix(Direction).GetUnitAxis(EAxis::X);
+
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString::Printf(TEXT("%f"),speedRunning));
+	AddMovementInput(ForwardDirection,Value);
 }
 
 void AHPlayer::MoveRight(float Value)
 {
+	const FRotator  Rotation = Controller->GetControlRotation();
+	const FRotator  Direction(0.f,Rotation.Yaw, 0.f);
+	const FVector RightDirection = FRotationMatrix(Direction).GetUnitAxis(EAxis::Y);
+	AddMovementInput(RightDirection,Value);
 }
 
