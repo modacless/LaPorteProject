@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "HPlayer.h"
 
 // Sets default values
@@ -30,5 +29,13 @@ void AHPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void AHPlayer::MoveForward(float Value)
+{
+}
+
+void AHPlayer::MoveRight(float Value)
+{
 }
 
