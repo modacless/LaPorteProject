@@ -2,12 +2,14 @@
 
 #include "HPlayer.h"
 
+#pragma region UE4_base
 // Sets default values
 AHPlayer::AHPlayer()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	OwnUcharacterMovement = this->FindComponentByClass<UCharacterMovementComponent>();
+	OwnUcharacterMovement->MaxWalkSpeed = SpeedWalk;
 }
 
 // Called when the game starts or when spawned
@@ -35,16 +37,22 @@ void AHPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis("Turn", this, &AHPlayer::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &AHPlayer::AddControllerPitchInput);
 
+	PlayerInputComponent->BindAction("Run", IE_Pressed,this, &AHPlayer::StartRun);
+	PlayerInputComponent->BindAction("Run", IE_Released, this, &AHPlayer::StopRun);
+
 }
 
+#pragma endregion UE4_base
+
+#pragma region Movement
 void AHPlayer::MoveForward(float Value)
 {
 	const FRotator  Rotation = Controller->GetControlRotation();
 	const FRotator  Direction(0.f,Rotation.Yaw, 0.f);
 	const FVector ForwardDirection = FRotationMatrix(Direction).GetUnitAxis(EAxis::X);
-
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString::Printf(TEXT("%f"),speedRunning));
+	
 	AddMovementInput(ForwardDirection,Value);
+	
 }
 
 void AHPlayer::MoveRight(float Value)
@@ -55,3 +63,25 @@ void AHPlayer::MoveRight(float Value)
 	AddMovementInput(RightDirection,Value);
 }
 
+void AHPlayer::StartRun()
+{
+	PlayerMovement = EPlayerMovement::Run;
+	OwnUcharacterMovement->MaxWalkSpeed = SpeedRun;
+}
+
+void AHPlayer::StopRun()
+{
+	PlayerMovement = EPlayerMovement::Walk;
+	OwnUcharacterMovement->MaxWalkSpeed = SpeedWalk;
+}
+
+#pragma endregion Movement
+
+void AHPlayer::ChangeState(EPlayerMovement State)
+{
+	switch (State)
+	{
+	case EPlayerMovement::Run:
+		break;
+	}
+}
