@@ -9,21 +9,21 @@ AHPlayer::AHPlayer()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	OwnUcharacterMovement = this->FindComponentByClass<UCharacterMovementComponent>();
-	OwnUcharacterMovement->MaxWalkSpeed = SpeedWalk;
 }
 
 // Called when the game starts or when spawned
 void AHPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	OwnUcharacterMovement->MaxWalkSpeed = SpeedWalk;
+	ActualStamina = MaxStamina;
 }
 
 // Called every frame
 void AHPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	ManageStamina(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -65,23 +65,64 @@ void AHPlayer::MoveRight(float Value)
 
 void AHPlayer::StartRun()
 {
-	PlayerMovement = EPlayerMovement::Run;
-	OwnUcharacterMovement->MaxWalkSpeed = SpeedRun;
+	ChangeStateMovement(EPlayerMovement::Run);
 }
 
 void AHPlayer::StopRun()
 {
-	PlayerMovement = EPlayerMovement::Walk;
-	OwnUcharacterMovement->MaxWalkSpeed = SpeedWalk;
+	ChangeStateMovement(EPlayerMovement::Walk);
 }
 
-#pragma endregion Movement
+void AHPlayer::ManageStamina(float Delta)
+{
+	if(ActualStamina < 0 && PlayerMovement == EPlayerMovement::Run)
+	{
+		ChangeStateMovement(EPlayerMovement::Walk);
+		GetWorldTimerManager().SetTimer(TimerStamina,this,&AHPlayer::CanRunNow,1.f,false,-1.f);
+	}
 
-void AHPlayer::ChangeState(EPlayerMovement State)
+	if(ActualStamina > MaxStamina)
+	{
+		ActualStamina = MaxStamina;
+	}
+
+	if(ActualStamina > 0 &&  PlayerMovement == EPlayerMovement::Run)
+	{
+		ActualStamina -= UseStaminaPerSeconds*Delta;
+	}else
+	{
+		if(ActualStamina < MaxStamina && PlayerMovement != EPlayerMovement::Run && !GetWorldTimerManager().IsTimerActive(AHPlayer::TimerStamina))
+		{
+			ActualStamina += GainStaminaPerSeconds*Delta;
+		}
+	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Stamina %f"),ActualStamina));	
+
+}
+
+void AHPlayer::CanRunNow()
+{
+	CanRun = true;
+}
+
+void AHPlayer::ChangeStateMovement(const EPlayerMovement State)
 {
 	switch (State)
 	{
 	case EPlayerMovement::Run:
+		OwnUcharacterMovement->MaxWalkSpeed = SpeedRun;
+		break;
+	case EPlayerMovement::Walk:
+		
+		OwnUcharacterMovement->MaxWalkSpeed = SpeedWalk;
 		break;
 	}
+
+	PlayerMovement = State;
 }
+
+
+#pragma endregion Movement
+
+

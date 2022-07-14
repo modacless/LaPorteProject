@@ -30,21 +30,26 @@ protected:
 	virtual void BeginPlay() override;
 
 	//Switch player State
-	void ChangeState(EPlayerMovement State);
+	void ChangeStateMovement(EPlayerMovement State);
+
+	//Manage stamina of player
+	UFUNCTION()
+	void ManageStamina(float Delta);
+
+	UFUNCTION()
+	void CanRunNow();
 
 	//References
 	UPROPERTY()
 	UCharacterMovementComponent *OwnUcharacterMovement;
 
 	//Property
-	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
-	float ActualVelocity;
+	bool CanRun;
 
+	//Stamina
 	float ActualStamina;
+	FTimerHandle TimerStamina;
 
-	UPROPERTY(EditInstanceOnly,BlueprintReadOnly,Category = Data)
-	float MaxStamina;
-	
 
 public:	
 	// Called every frame
@@ -70,6 +75,8 @@ public:
 	void StopRun();
 
 	//Property//
+
+	//Movement
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	bool IsRunning;
 	
@@ -81,5 +88,15 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data)
 	EPlayerMovement PlayerMovement;
+
+	//Stamina
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = Data)
+	float MaxStamina;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= Data)
+	float GainStaminaPerSeconds;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= Data)
+	float UseStaminaPerSeconds;
 	
 };
