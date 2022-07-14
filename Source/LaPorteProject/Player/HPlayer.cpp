@@ -17,6 +17,14 @@ void AHPlayer::BeginPlay()
 	Super::BeginPlay();
 	OwnUcharacterMovement->MaxWalkSpeed = SpeedWalk;
 	ActualStamina = MaxStamina;
+
+	HGameInstance = Cast<UHGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!HGameInstance)
+	{
+		UE_LOG(LogTemp,Fatal,TEXT("No game instance found"))
+	}
+
+	//UHGameInstance gameInstance = Cast<UHGameInstance>(UGameplayStatics::LoadGameFromSlot(SaveS));
 }
 
 // Called every frame
@@ -39,6 +47,8 @@ void AHPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	PlayerInputComponent->BindAction("Run", IE_Pressed,this, &AHPlayer::StartRun);
 	PlayerInputComponent->BindAction("Run", IE_Released, this, &AHPlayer::StopRun);
+
+	PlayerInputComponent->BindAction("Time", IE_Pressed, this, &AHPlayer::StartTime);
 
 }
 
@@ -97,7 +107,7 @@ void AHPlayer::ManageStamina(float Delta)
 		}
 	}
 
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Stamina %f"),ActualStamina));	
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Stamina %f"),ActualStamina));	
 
 }
 
@@ -125,4 +135,14 @@ void AHPlayer::ChangeStateMovement(const EPlayerMovement State)
 
 #pragma endregion Movement
 
+#pragma region Action
+void AHPlayer::TimeChange(const ETimeInDay TimeToChange) const
+{
+	/*for( int32  i =0; i< HGameInstance->ObjectAccordingTime. ; ++i)
+	{
+
+	}*/
+}
+
+#pragma endregion Action
 

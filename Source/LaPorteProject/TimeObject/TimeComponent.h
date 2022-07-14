@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "../World/HGameInstance.h"
 #include "TimeComponent.generated.h"
 
 UENUM()
@@ -27,12 +28,19 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	FTransform OwnerTransform;
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UPROPERTY(Category = MapsAndSets,EditAnywhere)
+	UFUNCTION()
+	void ChangeTransformAccordingTime(const ETimeInDay TimeToChange);
+	
+	UPROPERTY(Category = "Time",EditAnywhere)
 	TMap<ETimeInDay,FTransform> PosAccordingTime;
+
+	
 	
 private:
 	void InitTimeComponent(FTransform DayPosition, FTransform NightPosition);

@@ -4,8 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+#include "../TimeObject/TimeComponent.h"
+#include "../World/HGameInstance.h"
 #include "HPlayer.generated.h"
 
 
@@ -43,6 +46,9 @@ protected:
 	UPROPERTY()
 	UCharacterMovementComponent *OwnUcharacterMovement;
 
+	UPROPERTY(BlueprintReadOnly)
+	UHGameInstance* HGameInstance; //Actual game Instance
+
 	//Property
 	bool CanRun;
 
@@ -74,6 +80,25 @@ public:
 	UFUNCTION()
 	void StopRun();
 
+	//Action
+	void TimeChange(ETimeInDay TimeToChange) const;
+
+	//Will change
+	void StartTime()
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("BOUGE Object")));
+		/*if(HGameInstance->ActualTimeInGame == ETimeInDay::Day)
+		{
+			TimeChange(ETimeInDay::Night);
+			HGameInstance->ActualTimeInGame = ETimeInDay::Night;
+		}else
+		{
+			TimeChange(ETimeInDay::Day);
+			HGameInstance->ActualTimeInGame = ETimeInDay::Day;
+		}*/
+		
+	};
+
 	//Property//
 
 	//Movement
@@ -98,5 +123,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= Data)
 	float UseStaminaPerSeconds;
+
+	
 	
 };
