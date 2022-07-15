@@ -3,9 +3,6 @@
 
 #include "TimeComponent.h"
 
-#include "Kismet/GameplayStatics.h"
-
-
 #pragma region UE4_Base
 
 // Sets default values for this component's properties
@@ -22,8 +19,9 @@ UTimeComponent::UTimeComponent()
 void UTimeComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	//UHGameInstance *GameInstance = Cast<UHGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	OwnerTransform = GetOwner()->GetTransform();
+	UHGameInstance *GameInstance = Cast<UHGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	GameInstance->ObjectsAccordingTime.Add(this);
+	//OwnerTransform = GetOwner()->GetTransform();
 	
 }
 

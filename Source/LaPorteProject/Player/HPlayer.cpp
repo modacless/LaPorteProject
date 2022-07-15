@@ -23,8 +23,7 @@ void AHPlayer::BeginPlay()
 	{
 		UE_LOG(LogTemp,Fatal,TEXT("No game instance found"))
 	}
-
-	//UHGameInstance gameInstance = Cast<UHGameInstance>(UGameplayStatics::LoadGameFromSlot(SaveS));
+	
 }
 
 // Called every frame
@@ -138,10 +137,10 @@ void AHPlayer::ChangeStateMovement(const EPlayerMovement State)
 #pragma region Action
 void AHPlayer::TimeChange(const ETimeInDay TimeToChange) const
 {
-	/*for( int32  i =0; i< HGameInstance->ObjectAccordingTime. ; ++i)
+	for( int32  i =0; i< HGameInstance->ObjectsAccordingTime.Num() ; ++i)
 	{
-
-	}*/
+		HGameInstance->ObjectsAccordingTime[i]->ChangeTransformAccordingTime(TimeToChange);
+	}
 }
 
 #pragma endregion Action

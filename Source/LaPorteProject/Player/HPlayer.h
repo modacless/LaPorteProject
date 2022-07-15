@@ -1,12 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
-
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
-
 #include "../TimeObject/TimeComponent.h"
 #include "../World/HGameInstance.h"
 #include "HPlayer.generated.h"
@@ -86,8 +84,8 @@ public:
 	//Will change
 	void StartTime()
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("BOUGE Object")));
-		/*if(HGameInstance->ActualTimeInGame == ETimeInDay::Day)
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("BOUGE Object")));
+		if(HGameInstance->ActualTimeInGame == ETimeInDay::Day)
 		{
 			TimeChange(ETimeInDay::Night);
 			HGameInstance->ActualTimeInGame = ETimeInDay::Night;
@@ -95,7 +93,7 @@ public:
 		{
 			TimeChange(ETimeInDay::Day);
 			HGameInstance->ActualTimeInGame = ETimeInDay::Day;
-		}*/
+		}
 		
 	};
 
