@@ -3,11 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "IInterractable.h"
 #include "GameFramework/Actor.h"
 #include "AInterractable.generated.h"
 
 UCLASS()
-class LAPORTEPROJECT_API AAInterractable : public AActor
+class LAPORTEPROJECT_API AAInterractable : public AActor, public IInterractable
 {
 	GENERATED_BODY()
 	
@@ -22,5 +23,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	
+	//void Interract_Implementation() override;
 
 };

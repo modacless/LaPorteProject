@@ -31,6 +31,7 @@ void AHPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	ManageStamina(DeltaTime);
+	TargetObject(RangeInterraction);
 }
 
 // Called to bind functionality to input
@@ -82,6 +83,7 @@ void AHPlayer::StopRun()
 	ChangeStateMovement(EPlayerMovement::Walk);
 }
 
+//Manage stamina
 void AHPlayer::ManageStamina(float Delta)
 {
 	if(ActualStamina < 0 && PlayerMovement == EPlayerMovement::Run)
@@ -95,6 +97,7 @@ void AHPlayer::ManageStamina(float Delta)
 		ActualStamina = MaxStamina;
 	}
 
+	//Increase/Decrease stamina
 	if(ActualStamina > 0 &&  PlayerMovement == EPlayerMovement::Run)
 	{
 		ActualStamina -= UseStaminaPerSeconds*Delta;
@@ -135,12 +138,29 @@ void AHPlayer::ChangeStateMovement(const EPlayerMovement State)
 #pragma endregion Movement
 
 #pragma region Action
+
+//Input that change time in game (Day/night)
 void AHPlayer::TimeChange(const ETimeInDay TimeToChange) const
 {
 	for( int32  i =0; i< HGameInstance->ObjectsAccordingTime.Num() ; ++i)
 	{
 		HGameInstance->ObjectsAccordingTime[i]->ChangeTransformAccordingTime(TimeToChange);
 	}
+}
+//Raycast that check if there is an object which can be interract
+void AHPlayer::TargetObject(float Range)
+{
+	FVector CamLoc;
+	FRotator CamRot;
+	
+	Controller->GetPlayerViewPoint(CamLoc, CamRot); // Get the camera position and rotation
+	const FVector StartTrace = CamLoc; // trace start is the camera location
+	const FVector Direction = CamRot.Vector();
+	
+	const FVector EndTrace = StartTrace + Direction *Range;
+
+	FCollisionQueryParams TraceParams(FName(TEXT("WeaponTrace")),true,this);
+
 }
 
 #pragma endregion Action

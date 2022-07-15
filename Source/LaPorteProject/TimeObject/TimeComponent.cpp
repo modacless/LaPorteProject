@@ -42,9 +42,8 @@ void UTimeComponent::InitTimeComponent(FTransform DayPosition, FTransform NightP
 	//PosAccordingTime.Add()
 }
 
-void UTimeComponent::ChangeTransformAccordingTime(const ETimeInDay TimeToChange)
+
+void UTimeComponent::ChangeTransformAccordingTime_Implementation(const ETimeInDay TimeToChange)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("BOUGE Object")));	
 	GetOwner()->SetActorLocation(PosAccordingTime[TimeToChange].GetLocation()) ;
 }
-

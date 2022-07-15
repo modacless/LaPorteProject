@@ -34,7 +34,7 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UFUNCTION()
+	UFUNCTION(BlueprintNativeEvent)
 	void ChangeTransformAccordingTime(const ETimeInDay TimeToChange);
 	
 	UPROPERTY(Category = "Time",EditAnywhere)

@@ -20,9 +20,10 @@ class LAPORTEPROJECT_API IInterractable
 {
 	GENERATED_BODY()
 
-	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
-
-protected:
-	virtual void Interract() = 0;
 public:
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Interract")
+	void Interract();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Interract")
+	void StopInterract();
 };

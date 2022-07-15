@@ -81,6 +81,8 @@ public:
 	//Action
 	void TimeChange(ETimeInDay TimeToChange) const;
 
+	void TargetObject(float Range);
+
 	//Will change
 	void StartTime()
 	{
@@ -122,6 +124,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= Data)
 	float UseStaminaPerSeconds;
 
-	
+	//Action
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= Data)
+	float RangeInterraction;
 	
 };
