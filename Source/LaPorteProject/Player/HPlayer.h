@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
+#include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "../TimeObject/TimeComponent.h"
 #include "../World/HGameInstance.h"
@@ -46,6 +47,17 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	UHGameInstance* HGameInstance; //Actual game Instance
+	
+	// Arrow Component for the Camera "Watch" viewpoint location
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	class UArrowComponent* CameraLookAtWatchLocation;
+
+	// Arrow Component for the Camera Origin viewpoint location
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	class UArrowComponent* CameraOriginLocation;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	class UCameraComponent* CameraComp; 
 
 	//Property
 	bool CanRun;
@@ -78,10 +90,16 @@ public:
 	UFUNCTION()
 	void StopRun();
 
+	//Called to rotate camera
+	void TurnAtRate(float Rate);
+	void LookUpAtRate(float Rate);
+
 	//Action
 	void TimeChange(ETimeInDay TimeToChange) const;
 
 	void TargetObject(float Range);
+
+	void LookWatch();
 
 	//Will change
 	void StartTime()
@@ -113,6 +131,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data)
 	EPlayerMovement PlayerMovement;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly, Category = Data)
+	float CameraRotationSpeed;
 
 	//Stamina
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = Data)

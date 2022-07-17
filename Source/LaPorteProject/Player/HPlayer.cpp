@@ -2,6 +2,8 @@
 
 #include "HPlayer.h"
 
+#include "Components/ArrowComponent.h"
+
 #pragma region UE4_base
 // Sets default values
 AHPlayer::AHPlayer()
@@ -9,6 +11,18 @@ AHPlayer::AHPlayer()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	OwnUcharacterMovement = this->FindComponentByClass<UCharacterMovementComponent>();
+	
+	//Instantiate player
+	CameraLookAtWatchLocation = CreateDefaultSubobject<UArrowComponent>(TEXT("CameraLookAtWatchLocation"));
+	CameraOriginLocation = CreateDefaultSubobject<UArrowComponent>(TEXT("CameraOriginLocation"));
+	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
+
+	CameraComp->bUsePawnControlRotation = true;
+
+
+	CameraLookAtWatchLocation->SetupAttachment(GetMesh());
+	CameraOriginLocation->SetupAttachment(GetMesh());
+	CameraComp->SetupAttachment(GetMesh());
 }
 
 // Called when the game starts or when spawned
@@ -42,8 +56,8 @@ void AHPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis("MoveForward", this, &AHPlayer::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AHPlayer::MoveRight);
 
-	PlayerInputComponent->BindAxis("Turn", this, &AHPlayer::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("LookUp", this, &AHPlayer::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("Turn", this, &AHPlayer::TurnAtRate);
+	PlayerInputComponent->BindAxis("LookUp", this, &AHPlayer::LookUpAtRate);
 
 	PlayerInputComponent->BindAction("Run", IE_Pressed,this, &AHPlayer::StartRun);
 	PlayerInputComponent->BindAction("Run", IE_Released, this, &AHPlayer::StopRun);
@@ -134,6 +148,21 @@ void AHPlayer::ChangeStateMovement(const EPlayerMovement State)
 	PlayerMovement = State;
 }
 
+//Camera
+
+void AHPlayer::TurnAtRate(float Rate)
+{
+	// calculate delta for this frame from the rate information
+	AddControllerYawInput(Rate  * GetWorld()->GetDeltaSeconds() * CameraRotationSpeed);
+}
+
+void AHPlayer::LookUpAtRate(float Rate)
+{
+	// calculate delta for this frame from the rate information
+	AddControllerPitchInput(Rate  * GetWorld()->GetDeltaSeconds() * CameraRotationSpeed);
+}
+
+
 
 #pragma endregion Movement
 
@@ -147,6 +176,14 @@ void AHPlayer::TimeChange(const ETimeInDay TimeToChange) const
 		HGameInstance->ObjectsAccordingTime[i]->ChangeTransformAccordingTime(TimeToChange);
 	}
 }
+
+//Input to look at your watch
+void AHPlayer::LookWatch()
+{
+	//UCameraComponent PlayerCamera = GetCompo
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("")));
+}
+
 //Raycast that check if there is an object which can be interract
 void AHPlayer::TargetObject(float Range)
 {
@@ -162,6 +199,7 @@ void AHPlayer::TargetObject(float Range)
 	FCollisionQueryParams TraceParams(FName(TEXT("WeaponTrace")),true,this);
 
 }
+
 
 #pragma endregion Action
 
