@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Editor.h"
 #include "../World/HGameInstance.h"
 #include "TimeComponent.generated.h"
 
@@ -37,11 +38,29 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void ChangeTransformAccordingTime(const ETimeInDay TimeToChange);
 	
-	UPROPERTY(Category = "Time",EditAnywhere)
+	UPROPERTY(Category = "Time",EditAnywhere, BlueprintReadWrite)
 	TMap<ETimeInDay,FTransform> PosAccordingTime;
 
+	//Change time position, and declare
+	UFUNCTION(BlueprintCallable, Category = "Time")
+	void ChangeToDay(FTransform Transform);
+
+	UFUNCTION(BlueprintCallable, Category = "Time")
+	void ChangeToNight(FTransform Transform);
+
+
+	//Event and delegate
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTimeDay);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTimeNight);
+	
+	UPROPERTY(BlueprintReadWrite)
+	FTimeDay TimeDay;
+
+	UPROPERTY(BlueprintReadWrite)
+	FTimeNight TimeNight;
 	
 	
 private:
-	void InitTimeComponent(FTransform DayPosition, FTransform NightPosition);
+	void InitTimeComponent();
 };
+

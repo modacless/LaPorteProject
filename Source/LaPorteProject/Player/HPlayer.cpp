@@ -181,7 +181,7 @@ void AHPlayer::TimeChange(const ETimeInDay TimeToChange) const
 void AHPlayer::LookWatch()
 {
 	//UCameraComponent PlayerCamera = GetCompo
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("")));
+	
 }
 
 //Raycast that check if there is an object which can be interract
