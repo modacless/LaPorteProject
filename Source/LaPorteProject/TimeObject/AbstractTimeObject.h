@@ -4,9 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "../Tools/GhostActor.h"
 #include "TimeComponent.h"
 #include "AbstractTimeObject.generated.h"
 
+class AGhostActor;
 UCLASS()
 class LAPORTEPROJECT_API AAbstractTimeObject : public AActor
 {
@@ -17,17 +19,11 @@ public:
 	AAbstractTimeObject();
 
 	UPROPERTY(EditAnywhere)
-	UTimeComponent *TimeComponent;
+	UTimeComponent *TimeComponent = nullptr;
 
 	//Onw mesh reference
 	UPROPERTY(EditDefaultsOnly)
-	UStaticMeshComponent *OwnActorMesh;
-
-	//Reference ghost object time and night
-	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent *DayMeshLocation;
-	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent *NightMeshLocation;
+	UStaticMeshComponent *OwnActorMesh = nullptr;
 
 protected:
 	// Called when the game starts or when spawned
@@ -42,5 +38,11 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void ChangeNight();
+
+	UFUNCTION(BlueprintCallable)
+	void InitGhostActorDay(AGhostActor *Day);
+
+	UFUNCTION(BlueprintCallable)
+	void InitGhostActorNight(AGhostActor *Night);
 
 };

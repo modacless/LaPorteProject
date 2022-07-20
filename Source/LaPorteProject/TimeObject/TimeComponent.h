@@ -1,12 +1,17 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
+
+class AGhostActor;
+
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Editor.h"
 #include "../World/HGameInstance.h"
+#include "LaPorteProject/Tools/GhostActor.h"
 #include "TimeComponent.generated.h"
+
 
 UENUM()
 enum class ETimeInDay : uint8
@@ -14,7 +19,6 @@ enum class ETimeInDay : uint8
 	Day = 0,
 	Night = 1
 };
-
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class LAPORTEPROJECT_API UTimeComponent : public UActorComponent
@@ -48,6 +52,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Time")
 	void ChangeToNight(FTransform Transform);
 
+	UFUNCTION(BlueprintCallable, Category = "Time")
+	void DestroyDay();
+
+	UFUNCTION(BlueprintCallable, Category = "Time")
+	void DestroyNight();
 
 	//Event and delegate
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTimeDay);
@@ -58,6 +67,13 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	FTimeNight TimeNight;
+
+	//Reference ghost object time and night
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	AGhostActor *DayGhostActor;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	AGhostActor *NightGhostActor;
+	
 	
 	
 private:

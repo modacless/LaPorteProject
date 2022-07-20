@@ -2,7 +2,9 @@
 
 #include "HPlayer.h"
 
+#include "HPlayer_Controller.h"
 #include "Components/ArrowComponent.h"
+#include "GameFramework/GameSession.h"
 
 #pragma region UE4_base
 // Sets default values
@@ -15,14 +17,16 @@ AHPlayer::AHPlayer()
 	//Instantiate player
 	CameraLookAtWatchLocation = CreateDefaultSubobject<UArrowComponent>(TEXT("CameraLookAtWatchLocation"));
 	CameraOriginLocation = CreateDefaultSubobject<UArrowComponent>(TEXT("CameraOriginLocation"));
-	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
-
-	CameraComp->bUsePawnControlRotation = true;
+	//CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
+	
+	CurvedTimeLine = CreateDefaultSubobject<UTimelineComponent>(TEXT("TimeLinePlayer"));
+	//CameraComp->bUsePawnControlRotation = true;
 
 
 	CameraLookAtWatchLocation->SetupAttachment(GetMesh());
 	CameraOriginLocation->SetupAttachment(GetMesh());
-	CameraComp->SetupAttachment(GetMesh());
+	//CameraComp->SetupAttachment(GetMesh(),"spine_03Socket");
+	
 }
 
 // Called when the game starts or when spawned
@@ -37,6 +41,17 @@ void AHPlayer::BeginPlay()
 	{
 		UE_LOG(LogTemp,Fatal,TEXT("No game instance found"))
 	}
+
+	//Bind timeline
+	if(CurveFloat)
+	{
+		//FOnTimelineFloat TimeLineProgress;
+		//TimeLineProgress.BindUFunction(this,FName("TimeLineProgress"));
+		UpdateFunctionFloatCameraTimeLine.BindDynamic(this, &AHPlayer::UpdateTimeLineCameraInProgress);
+		
+		CurvedTimeLine->SetTimelineLength(1.f);
+		CurvedTimeLine->AddInterpFloat(CurveFloat,UpdateFunctionFloatCameraTimeLine);
+	}
 	
 }
 
@@ -46,6 +61,14 @@ void AHPlayer::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	ManageStamina(DeltaTime);
 	TargetObject(RangeInterraction);
+	CurvedTimeLine->TickComponent(DeltaTime, ELevelTick::LEVELTICK_TimeOnly, NULL);
+
+	SetActorRelativeRotation(FRotator(0.f,Controller->GetControlRotation().Yaw, 0.f));
+	
+	bUseControllerRotationPitch = true;
+	bUseControllerRotationYaw = true;
+	bUseControllerRotationRoll = false;
+
 }
 
 // Called to bind functionality to input
@@ -63,6 +86,7 @@ void AHPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Run", IE_Released, this, &AHPlayer::StopRun);
 
 	PlayerInputComponent->BindAction("Time", IE_Pressed, this, &AHPlayer::StartTime);
+	PlayerInputComponent->BindAction("LookWatch", IE_Pressed, this, &AHPlayer::LookWatch);
 
 }
 
@@ -89,12 +113,20 @@ void AHPlayer::MoveRight(float Value)
 
 void AHPlayer::StartRun()
 {
-	ChangeStateMovement(EPlayerMovement::Run);
+	if(PlayerMovement == EPlayerMovement::Walk)
+	{
+		ChangeStateMovement(EPlayerMovement::Run);
+	}
+
 }
 
 void AHPlayer::StopRun()
 {
-	ChangeStateMovement(EPlayerMovement::Walk);
+	if(	PlayerMovement == EPlayerMovement::Run)
+	{
+		ChangeStateMovement(EPlayerMovement::Walk);
+	}
+	
 }
 
 //Manage stamina
@@ -140,9 +172,12 @@ void AHPlayer::ChangeStateMovement(const EPlayerMovement State)
 		OwnUcharacterMovement->MaxWalkSpeed = SpeedRun;
 		break;
 	case EPlayerMovement::Walk:
-		
 		OwnUcharacterMovement->MaxWalkSpeed = SpeedWalk;
 		break;
+	case EPlayerMovement::Watch:
+		OwnUcharacterMovement->MaxWalkSpeed = 0;
+		break;
+	default: ;
 	}
 
 	PlayerMovement = State;
@@ -153,13 +188,21 @@ void AHPlayer::ChangeStateMovement(const EPlayerMovement State)
 void AHPlayer::TurnAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
-	AddControllerYawInput(Rate  * GetWorld()->GetDeltaSeconds() * CameraRotationSpeed);
+	if(PlayerMovement != EPlayerMovement::Watch)
+	{
+		AddControllerYawInput(Rate  * GetWorld()->GetDeltaSeconds() * CameraRotationSpeed);
+	}
+
 }
 
 void AHPlayer::LookUpAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
-	AddControllerPitchInput(Rate  * GetWorld()->GetDeltaSeconds() * CameraRotationSpeed);
+	if(PlayerMovement != EPlayerMovement::Watch)
+	{
+		AddControllerPitchInput(Rate  * GetWorld()->GetDeltaSeconds() * CameraRotationSpeed);
+	}
+	
 }
 
 
@@ -180,8 +223,52 @@ void AHPlayer::TimeChange(const ETimeInDay TimeToChange) const
 //Input to look at your watch
 void AHPlayer::LookWatch()
 {
-	//UCameraComponent PlayerCamera = GetCompo
+	//CameraComp->SetRelativeLocation(FMath::Lerp(GetActorLocation(),CameraLookAtWatchLocation->GetComponentLocation(),0.1f));
+
+	if(PlayerMovement != EPlayerMovement::Watch) //Look watch
+	{
+		CameraOriginLocation->SetWorldRotation(GetActorRotation());
+		GoalTransformCamera = CameraLookAtWatchLocation->GetComponentTransform();
+		CurvedTimeLine->PlayFromStart();
+		ChangeStateMovement(EPlayerMovement::Watch);
+	}else //Stop looking watch
+	{
+		CameraOriginLocation->SetWorldRotation(GoalTransformCamera.GetRotation());
+		GoalTransformCamera = CameraOriginLocation->GetComponentTransform();
+		CurvedTimeLine->PlayFromStart();
+		ChangeStateMovement(EPlayerMovement::Walk);
+	}
+		
 	
+}
+
+void AHPlayer::UpdateTimeLineCameraInProgress(float Value)
+{
+
+	//const float Angle = FMath::Acos(FVector::DotProduct(GetActorUpVector(), FVector::UpVector));
+	//const FVector Axis = FVector::CrossProduct(GetActorForwardVector(), -FVector::UpVector).GetSafeNormal();
+	//const FQuat DeltaRotation = FQuat(Axis, Angle);
+	
+	//GetController()->SetControlRotation(DeltaRotation.Rotator());
+	//GetController()->ClientSetRotation(FRotator(FMath::Lerp(GetController()->GetControlRotation().Pitch,-40.f,Value),GetController()->GetControlRotation().Yaw,0));
+
+	//GetController()->ClientSetRotation(FRotator(FMath::Lerp(GetController()->GetControlRotation().Pitch,-40.f,Value),GetController()->GetControlRotation().Yaw,0));
+	//	GetController()->ClientSetRotation(FRotator(0.f,0.f, 0.f));
+	//GetController()->ClientSetRotation(FRotator(-90,0,0));
+	//CameraComp->SetWorldLocation(FMath::Lerp(CameraComp->GetComponentLocation(),GoalTransformCamera.GetLocation(),Value));
+	//CameraComp->SetWorldRotation(FMath::Lerp(FQuat(CameraComp->GetComponentRotation()),FQuat(GoalTransformCamera.GetRotation()),Value));
+	//Cast<AHPlayer_Controller>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->LookWatchRotation(Value,CameraOriginLocation->GetComponentRotation(),GoalTransformCamera.Rotator());
+
+	/*const float Angle = FMath::Acos(FVector::DotProduct(GetActorUpVector(), FVector::UpVector));
+	const FVector Axis = FVector::CrossProduct(GetActorUpVector(), FVector::UpVector).GetSafeNormal();
+	const FQuat DeltaRotation = FQuat(Axis, Angle);
+	AHPlayer_Controller *Player_Controller = Cast<AHPlayer_Controller>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	CameraComp->AddRelativeRotation(DeltaRotation);*/
+	
+	//FRotator rot = FMath::Lerp(FQuat(CameraComp->GetComponentRotation()),FQuat(GoalTransformCamera.GetRotation()),Value).Rotator();
+	//AHPlayer_Controller *Player_Controller = Cast<AHPlayer_Controller>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	//Player_Controller->K2_SetActorRotation(rot,false);
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Watch %f"),GetController()->GetControlRotation().Pitch));
 }
 
 //Raycast that check if there is an object which can be interract
