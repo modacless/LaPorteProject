@@ -5,17 +5,20 @@
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "Camera/CameraComponent.h"
+#include "Components/TimelineComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "../TimeObject/TimeComponent.h"
 #include "../World/HGameInstance.h"
 #include "HPlayer.generated.h"
 
+class UCurveFloat;
 
 UENUM()
 enum class EPlayerMovement : uint8 
 {
 	Run = 1 UMETA(DisplayName = "Run"),
 	Walk  = 0   UMETA(DisplayName = "Walk"),
+	Watch = 2 UMETA(DisplayName = "Watch")
 };
 
 UCLASS()
@@ -26,6 +29,16 @@ class LAPORTEPROJECT_API AHPlayer : public ACharacter
 public:
 	// Sets default values for this character's properties
 	AHPlayer();
+
+private:
+
+	//Timeline
+	FOnTimelineFloat UpdateFunctionFloatCameraTimeLine;
+
+	UFUNCTION()
+	void UpdateTimeLineCameraInProgress(float Value);
+
+	FTransform GoalTransformCamera;
 
 protected:
 	// Called when the game starts or when spawned
@@ -56,8 +69,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	class UArrowComponent* CameraOriginLocation;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	class UCameraComponent* CameraComp; 
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	//class UCameraComponent* CameraComp;
+
+	UPROPERTY(EditAnywhere)
+	UTimelineComponent* CurvedTimeLine;
 
 	//Property
 	bool CanRun;
@@ -99,7 +115,7 @@ public:
 
 	void TargetObject(float Range);
 
-	void LookWatch();
+	void LookWatch(); //Show to player watch
 
 	//Will change
 	void StartTime()
@@ -148,5 +164,8 @@ public:
 	//Action
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= Data)
 	float RangeInterraction;
-	
+
+	//Timeline
+	UPROPERTY(EditAnywhere,Category = Timeline)
+	UCurveFloat* CurveFloat;
 };

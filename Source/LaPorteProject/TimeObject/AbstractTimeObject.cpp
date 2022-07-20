@@ -11,9 +11,6 @@ AAbstractTimeObject::AAbstractTimeObject()
 
 	OwnActorMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Main Mesh"));
 	TimeComponent = CreateDefaultSubobject<UTimeComponent>(TEXT("TimeComponent"));
-	
-	DayMeshLocation = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DayMesh Location"));
-	NightMeshLocation = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("NightMesh Location"));
 
 	TimeComponent->TimeDay.Clear();
 	TimeComponent->TimeNight.Clear();
@@ -27,12 +24,6 @@ void AAbstractTimeObject::BeginPlay()
 {
 	Super::BeginPlay();
 
-	/*TimeComponent->TimeDay.Clear();
-	TimeComponent->TimeNight.Clear();
-	
-	TimeComponent->TimeDay.AddDynamic(this,&AAbstractTimeObject::ChangeDay);
-	TimeComponent->TimeNight.AddDynamic(this,&AAbstractTimeObject::ChangeNight);*/
-
 }
 
 // Called every frame
@@ -45,12 +36,28 @@ void AAbstractTimeObject::Tick(float DeltaTime)
 void AAbstractTimeObject::ChangeNight_Implementation()
 {
 	this->SetActorLocation(TimeComponent->PosAccordingTime[ETimeInDay::Night].GetLocation()) ;
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Night %s"),*TimeComponent->PosAccordingTime[ETimeInDay::Night].GetLocation().ToString()));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Night %s"),*TimeComponent->PosAccordingTime[ETimeInDay::Night].GetLocation().ToString()));
 }
 
 void AAbstractTimeObject::ChangeDay_Implementation()
 {
 	this->SetActorLocation(TimeComponent->PosAccordingTime[ETimeInDay::Day].GetLocation());
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Day %s"),*TimeComponent->PosAccordingTime[ETimeInDay::Day].GetLocation().ToString()));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Day %s"),*TimeComponent->PosAccordingTime[ETimeInDay::Day].GetLocation().ToString()));
 }
+
+#pragma region Get/Set
+
+//Getter actor ghost day/night
+void AAbstractTimeObject::InitGhostActorDay(AGhostActor* Day)
+{
+	//DayGhostActor = Day;
+}
+
+void AAbstractTimeObject::InitGhostActorNight(AGhostActor* Night)
+{
+	//NightGhostActor = Night;
+}
+
+#pragma endregion Get/Set
+
 

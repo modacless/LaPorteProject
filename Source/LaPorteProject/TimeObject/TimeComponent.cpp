@@ -23,7 +23,6 @@ UTimeComponent::UTimeComponent()
 		PosAccordingTime.Add(ETimeInDay::Night,FTransform());
 	}
 
-
 }
 
 
@@ -66,14 +65,48 @@ void UTimeComponent::ChangeTransformAccordingTime_Implementation(const ETimeInDa
 	}
 }
 
-void UTimeComponent::ChangeToDay(const FTransform Transform)
+void UTimeComponent::ChangeToDay(FTransform Transform)
 {
+	if(DayGhostActor == nullptr)
+	{
+		FActorSpawnParameters SpawnInfo;
+		DayGhostActor = GetWorld()->SpawnActor<AGhostActor>(AGhostActor::StaticClass(),PosAccordingTime[ETimeInDay::Day].GetLocation(),PosAccordingTime[ETimeInDay::Day].GetRotation().Rotator(),SpawnInfo);
+		DayGhostActor->GhostMesh->SetStaticMesh(Cast<UStaticMeshComponent>(GetOwner()->GetComponentByClass(UStaticMeshComponent::StaticClass()))->GetStaticMesh());
+		DayGhostActor->ChangeMaterial(ETimeInDay::Day);
+	}
+
 	PosAccordingTime[ETimeInDay::Day] = Transform;
 	TimeNight.Broadcast();
+
+	DayGhostActor->SetActorLocation(PosAccordingTime[ETimeInDay::Day].GetLocation());
 }
 
-void UTimeComponent::ChangeToNight(const FTransform Transform)
+void UTimeComponent::ChangeToNight(FTransform Transform)
 {
+	if(NightGhostActor == nullptr)
+	{
+		FActorSpawnParameters SpawnInfo;
+		NightGhostActor = GetWorld()->SpawnActor<AGhostActor>(AGhostActor::StaticClass(),PosAccordingTime[ETimeInDay::Night].GetLocation(),PosAccordingTime[ETimeInDay::Night].GetRotation().Rotator(),SpawnInfo);
+		NightGhostActor->GhostMesh->SetStaticMesh(Cast<UStaticMeshComponent>(GetOwner()->GetComponentByClass(UStaticMeshComponent::StaticClass()))->GetStaticMesh());
+		NightGhostActor->ChangeMaterial(ETimeInDay::Night);
+	}
+	
 	PosAccordingTime[ETimeInDay::Night] = Transform;
 	TimeNight.Broadcast();
+
+	
+	NightGhostActor->SetActorLocation(PosAccordingTime[ETimeInDay::Night].GetLocation());
 }
+
+void UTimeComponent::DestroyDay()
+{
+	GetWorld()->DestroyActor(DayGhostActor);
+	DayGhostActor = nullptr;
+}
+
+void UTimeComponent::DestroyNight()
+{
+	GetWorld()->DestroyActor(NightGhostActor);
+	NightGhostActor = nullptr;
+}
+
