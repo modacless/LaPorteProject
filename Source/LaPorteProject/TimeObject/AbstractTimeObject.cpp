@@ -36,27 +36,19 @@ void AAbstractTimeObject::Tick(float DeltaTime)
 void AAbstractTimeObject::ChangeNight_Implementation()
 {
 	this->SetActorLocation(TimeComponent->PosAccordingTime[ETimeInDay::Night].GetLocation()) ;
+	this->SetActorRotation(TimeComponent->PosAccordingTime[ETimeInDay::Night].GetRotation()) ;
 	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Night %s"),*TimeComponent->PosAccordingTime[ETimeInDay::Night].GetLocation().ToString()));
 }
 
 void AAbstractTimeObject::ChangeDay_Implementation()
 {
 	this->SetActorLocation(TimeComponent->PosAccordingTime[ETimeInDay::Day].GetLocation());
+	this->SetActorRotation(TimeComponent->PosAccordingTime[ETimeInDay::Day].GetRotation());
 	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Day %s"),*TimeComponent->PosAccordingTime[ETimeInDay::Day].GetLocation().ToString()));
 }
 
 #pragma region Get/Set
 
-//Getter actor ghost day/night
-void AAbstractTimeObject::InitGhostActorDay(AGhostActor* Day)
-{
-	//DayGhostActor = Day;
-}
-
-void AAbstractTimeObject::InitGhostActorNight(AGhostActor* Night)
-{
-	//NightGhostActor = Night;
-}
 
 #pragma endregion Get/Set
 

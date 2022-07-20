@@ -5,9 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "../TimeObject/TimeComponent.h"
+#include "LaPorteProject/TimeObject/AbstractTimeObject.h"
 #include "GhostActor.generated.h"
 
 enum class ETimeInDay : uint8;
+class AAbstractTimeObject;
 
 UCLASS()
 class LAPORTEPROJECT_API AGhostActor : public AActor
@@ -30,5 +32,8 @@ public:
 	UStaticMeshComponent* GhostMesh;
 
 	void ChangeMaterial(ETimeInDay CorrespondingTime);
+
+	UPROPERTY(EditAnywhere)
+	AAbstractTimeObject* RealObject;
 
 };

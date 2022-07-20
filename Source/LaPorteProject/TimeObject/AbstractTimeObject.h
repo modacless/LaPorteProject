@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "../Tools/GhostActor.h"
 #include "TimeComponent.h"
 #include "AbstractTimeObject.generated.h"
 
@@ -38,11 +37,6 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void ChangeNight();
-
-	UFUNCTION(BlueprintCallable)
-	void InitGhostActorDay(AGhostActor *Day);
-
-	UFUNCTION(BlueprintCallable)
-	void InitGhostActorNight(AGhostActor *Night);
+	
 
 };

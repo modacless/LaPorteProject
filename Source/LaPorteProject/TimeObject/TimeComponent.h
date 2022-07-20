@@ -39,7 +39,7 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent,BlueprintCallable)
 	void ChangeTransformAccordingTime(const ETimeInDay TimeToChange);
 	
 	UPROPERTY(Category = "Time",EditAnywhere, BlueprintReadWrite)
@@ -57,24 +57,25 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Time")
 	void DestroyNight();
+	
 
 	//Event and delegate
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTimeDay);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTimeNight);
 	
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite,BlueprintAssignable)
 	FTimeDay TimeDay;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite,BlueprintAssignable)
 	FTimeNight TimeNight;
 
+	
 	//Reference ghost object time and night
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AGhostActor *DayGhostActor;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AGhostActor *NightGhostActor;
-	
-	
+
 	
 private:
 	void InitTimeComponent();
