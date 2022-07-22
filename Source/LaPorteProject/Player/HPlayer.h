@@ -9,6 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "../TimeObject/TimeComponent.h"
 #include "../World/HGameInstance.h"
+#include "LaPorteProject/TimeObject/AInterractable.h"
 #include "HPlayer.generated.h"
 
 class UCurveFloat;
@@ -113,9 +114,12 @@ public:
 	//Action
 	void TimeChange(ETimeInDay TimeToChange) const;
 
-	void TargetObject(float Range);
+	UFUNCTION(BlueprintCallable)
+	FVector_NetQuantize TargetObject(float Range);
 
 	void LookWatch(); //Show to player watch
+
+	void PickupObject();
 
 	//Will change
 	void StartTime()
@@ -164,6 +168,9 @@ public:
 	//Action
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= Data)
 	float RangeInterraction;
+
+	UPROPERTY(BlueprintReadWrite, Category= "Interractable")
+	AAInterractable* ObjectInHand = nullptr;
 
 	//Timeline
 	UPROPERTY(EditAnywhere,Category = Timeline)

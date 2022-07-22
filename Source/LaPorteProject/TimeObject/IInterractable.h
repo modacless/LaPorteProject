@@ -21,9 +21,9 @@ class LAPORTEPROJECT_API IInterractable
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Interract")
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent,Category = "Interract")
 	void Interract();
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Interract")
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Interract")
 	void StopInterract();
 };

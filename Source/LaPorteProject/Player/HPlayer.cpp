@@ -2,6 +2,7 @@
 
 #include "HPlayer.h"
 
+#include "DrawDebugHelpers.h"
 #include "HPlayer_Controller.h"
 #include "Components/ArrowComponent.h"
 #include "GameFramework/GameSession.h"
@@ -60,7 +61,7 @@ void AHPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	ManageStamina(DeltaTime);
-	TargetObject(RangeInterraction);
+	//TargetObject(RangeInterraction);
 	CurvedTimeLine->TickComponent(DeltaTime, ELevelTick::LEVELTICK_TimeOnly, NULL);
 
 	SetActorRelativeRotation(FRotator(0.f,Controller->GetControlRotation().Yaw, 0.f));
@@ -88,6 +89,7 @@ void AHPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Time", IE_Pressed, this, &AHPlayer::StartTime);
 	PlayerInputComponent->BindAction("LookWatch", IE_Pressed, this, &AHPlayer::LookWatch);
 
+	PlayerInputComponent->BindAction("Interract",IE_Pressed, this, &AHPlayer::PickupObject);
 }
 
 #pragma endregion UE4_base
@@ -272,8 +274,9 @@ void AHPlayer::UpdateTimeLineCameraInProgress(float Value)
 }
 
 //Raycast that check if there is an object which can be interract
-void AHPlayer::TargetObject(float Range)
+FVector_NetQuantize AHPlayer::TargetObject(float Range)
 {
+	FHitResult OutHit;
 	FVector CamLoc;
 	FRotator CamRot;
 	
@@ -283,10 +286,54 @@ void AHPlayer::TargetObject(float Range)
 	
 	const FVector EndTrace = StartTrace + Direction *Range;
 
-	FCollisionQueryParams TraceParams(FName(TEXT("WeaponTrace")),true,this);
+	FCollisionQueryParams TraceParams;
+	TraceParams.AddIgnoredActor(this);
 
+	DrawDebugLine(GetWorld(),StartTrace,EndTrace, FColor::Red,false ,1,0,1);
+	bool hitTrace = GetWorld()->LineTraceSingleByChannel(OutHit, StartTrace,EndTrace, ECC_Visibility, TraceParams);
+	if(hitTrace)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, FString::Printf(TEXT("Watch %s"),*OutHit.Actor->GetName()));
+		return OutHit.ImpactPoint;
+	}
+
+	return FVector_NetQuantize(EndTrace.X,EndTrace.Y,EndTrace.Z);
 }
 
+void AHPlayer::PickupObject()
+{
+
+	if(ObjectInHand == nullptr)
+	{
+		FHitResult OutHit;
+		FVector CamLoc;
+		FRotator CamRot;
+	
+		Controller->GetPlayerViewPoint(CamLoc, CamRot); // Get the camera position and rotation
+		const FVector StartTrace = CamLoc; // trace start is the camera location
+		const FVector Direction = CamRot.Vector();
+	
+		const FVector EndTrace = StartTrace + Direction * RangeInterraction;
+
+		FCollisionQueryParams TraceParams;
+		TraceParams.AddIgnoredActor(this);
+
+		DrawDebugLine(GetWorld(),StartTrace,EndTrace, FColor::Green,false ,1,0,1);
+		bool hitTrace = GetWorld()->LineTraceSingleByChannel(OutHit, StartTrace,EndTrace, ECC_Visibility, TraceParams);
+		if(hitTrace)
+		{
+			IInterractable *InterractableObject = Cast<IInterractable>(OutHit.Actor);
+			if(InterractableObject)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Watch %s"),*OutHit.Actor->GetName()));
+				InterractableObject->Execute_Interract(InterractableObject->_getUObject());
+			}
+		}
+	}else
+	{
+		ObjectInHand->Execute_StopInterract(ObjectInHand->_getUObject());
+	}
+}
 
 #pragma endregion Action
 

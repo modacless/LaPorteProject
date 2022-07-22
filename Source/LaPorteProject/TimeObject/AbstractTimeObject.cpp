@@ -12,17 +12,19 @@ AAbstractTimeObject::AAbstractTimeObject()
 	OwnActorMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Main Mesh"));
 	TimeComponent = CreateDefaultSubobject<UTimeComponent>(TEXT("TimeComponent"));
 
-	TimeComponent->TimeDay.Clear();
-	TimeComponent->TimeNight.Clear();
 	
-	TimeComponent->TimeDay.AddDynamic(this,&AAbstractTimeObject::ChangeDay);
-	TimeComponent->TimeNight.AddDynamic(this,&AAbstractTimeObject::ChangeNight);
 }
 
 // Called when the game starts or when spawned
 void AAbstractTimeObject::BeginPlay()
 {
 	Super::BeginPlay();
+
+	TimeComponent->TimeDay.Clear();
+	TimeComponent->TimeNight.Clear();
+	
+	TimeComponent->TimeDay.AddDynamic(this,&AAbstractTimeObject::ChangeDay);
+	TimeComponent->TimeNight.AddDynamic(this,&AAbstractTimeObject::ChangeNight);
 
 }
 

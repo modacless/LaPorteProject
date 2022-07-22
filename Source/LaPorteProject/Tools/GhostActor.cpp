@@ -36,7 +36,8 @@ void AGhostActor::BeginPlay()
 {
 	Super::BeginPlay();
 	SetActorHiddenInGame(true);
-	
+	SetActorEnableCollision(false);
+	SetActorTickEnabled(false);
 }
 
 // Called every frame
