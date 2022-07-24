@@ -223,7 +223,7 @@ void AHPlayer::TimeChange(const ETimeInDay TimeToChange) const
 }
 
 //Input to look at your watch
-void AHPlayer::LookWatch()
+void AHPlayer::LookWatch() 
 {
 	//CameraComp->SetRelativeLocation(FMath::Lerp(GetActorLocation(),CameraLookAtWatchLocation->GetComponentLocation(),0.1f));
 
@@ -240,8 +240,6 @@ void AHPlayer::LookWatch()
 		CurvedTimeLine->PlayFromStart();
 		ChangeStateMovement(EPlayerMovement::Walk);
 	}
-		
-	
 }
 
 void AHPlayer::UpdateTimeLineCameraInProgress(float Value)
@@ -294,7 +292,7 @@ FVector_NetQuantize AHPlayer::TargetObject(float Range)
 	if(hitTrace)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, FString::Printf(TEXT("Watch %s"),*OutHit.Actor->GetName()));
-		return OutHit.ImpactPoint;
+		return OutHit.Location;
 	}
 
 	return FVector_NetQuantize(EndTrace.X,EndTrace.Y,EndTrace.Z);
