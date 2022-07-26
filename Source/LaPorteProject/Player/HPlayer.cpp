@@ -166,6 +166,7 @@ void AHPlayer::CanRunNow()
 	CanRun = true;
 }
 
+//State of player movement
 void AHPlayer::ChangeStateMovement(const EPlayerMovement State)
 {
 	switch (State)
