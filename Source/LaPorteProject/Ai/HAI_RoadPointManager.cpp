@@ -15,7 +15,16 @@ AHAI_RoadPointManager::AHAI_RoadPointManager()
 void AHAI_RoadPointManager::BeginPlay()
 {
 	Super::BeginPlay();
+
+	for(USHORT i = 0; i< RoadPoints.Num(); i++)
+	{
+		RoadPoints[i]->PointManager = this;
+	}
 	
+	if(ActualRoadPoint >= 0 && ActualRoadPoint < RoadPoints.Num())
+	{
+		ActualPoint = RoadPoints[ActualRoadPoint];
+	}
 }
 
 // Called every frame
@@ -23,5 +32,20 @@ void AHAI_RoadPointManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AHAI_RoadPointManager::NextPoint()
+{
+	ActualRoadPoint++;
+	if(ActualRoadPoint < 0)
+	{
+		ActualRoadPoint = RoadPoints.Num()-1;
+	}
+
+	if(ActualRoadPoint > RoadPoints.Num()-1)
+	{
+		ActualRoadPoint = 0;
+	}
+	ActualPoint = RoadPoints[ActualRoadPoint];
 }
 

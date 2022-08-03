@@ -31,6 +31,9 @@ public:
 	UPROPERTY()
 	AHAI_RoadPoint* NextPoint;
 
+	UPROPERTY()
+	class AHAI_RoadPointManager* PointManager;
+
 	//Function
 	UFUNCTION(BlueprintNativeEvent)
 	void OnAiEnter(UPrimitiveComponent* OverlapComponent,AActor* OtherActor,UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult);

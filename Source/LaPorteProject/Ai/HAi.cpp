@@ -2,12 +2,19 @@
 
 
 #include "HAi.h"
+
+#include "GameFramework/CharacterMovementComponent.h"
 // Sets default values
 AHAi::AHAi()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationRoll = false;
+	bUseControllerRotationYaw = false;
 	
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->RotationRate = FRotator(0.0f,500.0f,0.0f);
 }
 
 // Called when the game starts or when spawned
@@ -29,6 +36,17 @@ void AHAi::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void AHAi::ChangeToNextRoad()
+{
+	if(ActualRoad != nullptr)
+	{
+		if(ActualRoad->NextRoad != nullptr)
+		{
+			ActualRoad = ActualRoad->NextRoad;
+		}
+	}
 }
 
 

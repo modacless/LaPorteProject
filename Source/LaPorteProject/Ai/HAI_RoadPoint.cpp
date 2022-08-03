@@ -17,6 +17,7 @@ void AHAI_RoadPoint::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	
 }
 
 // Called every frame
@@ -32,6 +33,10 @@ void AHAI_RoadPoint::OnAiEnter_Implementation(UPrimitiveComponent* OverlapCompon
 	if(OtherActor != nullptr)
 	{
 		HorrorBot = Cast<AHAi>(OtherActor);
+		if(HorrorBot != nullptr)
+		{
+			HorrorBot->ActualRoad->NextPoint();
+		}
 	}
 }
 

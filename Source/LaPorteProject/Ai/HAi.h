@@ -8,6 +8,7 @@
 #include "Perception/AIPerceptionComponent.h"
 #include "AIController.h"
 #include "HAI_Controller.h"
+#include "HAI_RoadPointManager.h"
 #include "HAi.generated.h"
 
 UCLASS()
@@ -23,18 +24,23 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
+	//Function
+	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION()
+	void ChangeToNextRoad();
+
 	//Propriety
 	UPROPERTY(EditAnywhere,Category= AI)
     class UBehaviorTree *BehaviorTree;
 
-	UPROPERTY()
-	AHAI_Controller* ActualRoad;
+	UPROPERTY(EditAnywhere, Category= AI)
+	class AHAI_RoadPointManager* ActualRoad;
 	
 };
