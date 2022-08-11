@@ -19,7 +19,8 @@ enum class EPlayerMovement : uint8
 {
 	Run = 1 UMETA(DisplayName = "Run"),
 	Walk  = 0   UMETA(DisplayName = "Walk"),
-	Watch = 2 UMETA(DisplayName = "Watch")
+	Watch = 2 UMETA(DisplayName = "Watch"),
+	Hide = 3 UMETA(DisplayName = "Hide"),
 };
 
 UCLASS()

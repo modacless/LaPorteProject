@@ -3,11 +3,14 @@
 
 #include "HAI_Controller.h"
 
+#include "Perception/AISenseConfig_Hearing.h"
+
 
 AHAI_Controller::AHAI_Controller()
 {
 	AiSenseConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sensor Config"));
 	SetPerceptionComponent(*CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Perception component")));
+	AiHearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing Component"));
 	if(AiSenseConfig)
 	{
 		AILostSightRadius += AISightRadius;
@@ -18,12 +21,25 @@ AHAI_Controller::AHAI_Controller()
 		AiSenseConfig->DetectionByAffiliation.bDetectEnemies = true;
 		AiSenseConfig->DetectionByAffiliation.bDetectNeutrals = true;
 		AiSenseConfig->DetectionByAffiliation.bDetectFriendlies = true;
-
-		GetPerceptionComponent()->SetDominantSense(*AiSenseConfig->GetSenseImplementation());
-		GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this,&AHAI_Controller::OnPawnDetected);
 		//GetPerceptionComponent()->OnTargetPerceptionUpdated(this,)
-		GetPerceptionComponent()->ConfigureSense(*AiSenseConfig);
+		//
 	}
+
+	if(AiHearingConfig)
+	{
+		AiHearingConfig->HearingRange = AIHearingRadius;
+		AiHearingConfig->DetectionByAffiliation.bDetectEnemies = true;
+		AiHearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
+		AiHearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
+		
+	}
+
+	GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this,&AHAI_Controller::OnPawnDetected);
+	GetPerceptionComponent()->ConfigureSense(*AiSenseConfig);
+	GetPerceptionComponent()->ConfigureSense(*AiHearingConfig);
+
+
+	GetPerceptionComponent()->SetDominantSense(*AiSenseConfig->GetSenseImplementation());
 }
 
 void AHAI_Controller::BeginPlay()
@@ -32,6 +48,7 @@ void AHAI_Controller::BeginPlay()
 	PawnAi = Cast<AHAi>(GetPawn());
 	EnemyState = EEnemyState::Road;
 	APlayer = UGameplayStatics::GetPlayerCharacter(GetWorld(),0);
+	DelegateToLookingFor.BindUFunction(this,"TimerLookingFor",TimeInStateLookingFor);
 }
 
 void AHAI_Controller::Tick(float DeltaSeconds)
@@ -44,9 +61,16 @@ void AHAI_Controller::Tick(float DeltaSeconds)
 		MoveToPlayer();
 		break;
 	case EEnemyState::Road:
-		MoveToNextPoint();
+		if(EnemyState != EEnemyState::LookFor)
+		{
+			MoveToNextPoint();
+		}
+		break;
+	case EEnemyState::HearSound:
+		MoveToSound();
 		break;
 	case EEnemyState::LookFor:
+		MoveToFind();
 		break;
 	}
 }
@@ -65,39 +89,35 @@ void AHAI_Controller::OnPawnDetected(AActor* SensedActor, FAIStimulus Stimulus)
 {
 	if(Stimulus.WasSuccessfullySensed())
 	{
-
-		const AHPlayer* Player = Cast<AHPlayer>(SensedActor);
-		if(Player != nullptr)
+		if(Stimulus.Type == AiHearingConfig->GetSenseID())
 		{
-			EnemyState = EEnemyState::Detected;
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Find!"));	
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Heard!"));
+			EnemyState = EEnemyState::HearSound;
+			SoundPosition = Stimulus.StimulusLocation;
 		}
-	}else
-	{
-		EnemyState = EEnemyState::Road;
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Road!"));
-	}
-	
-	//UE_LOG(LogTemp, Warning, TEXT("Sensing Actor"));
-	/*if(DetectedPawns.Num() > 0)
-	{
-		
-		for(USHORT i = 0; i< DetectedPawns.Num(); i++)
+
+		if(Stimulus.Type == AiSenseConfig->GetSenseID())
 		{
-			const AHPlayer* Player = Cast<AHPlayer>(DetectedPawns[i]);
+			const AHPlayer* Player = Cast<AHPlayer>(SensedActor);
 			if(Player != nullptr)
 			{
-				float Distance = GetPawn()->GetDistanceTo(Player);
-				EnemyState = EEnemyState::Detected;
+				if(Player->PlayerMovement != EPlayerMovement::Hide)
+				{
+					EnemyState = EEnemyState::Detected;
+					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Find!"));	
+				}
 			}
-			
 		}
 	}else
 	{
-		
-		EnemyState = EEnemyState::Road;
+		if(EnemyState != EEnemyState::LookFor)
+		{
+			GetWorld()->GetTimerManager().SetTimer(TimerToLookingFor, DelegateToLookingFor,TimeInStateLookingFor,false);
+		}
+		EnemyState = EEnemyState::LookFor;
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("LookFor!"));
 	}
-	*/
+	
 }
 
 void AHAI_Controller::MoveToNextPoint()
@@ -110,14 +130,52 @@ void AHAI_Controller::MoveToNextPoint()
 
 void AHAI_Controller::MoveToPlayer()
 {
-	//GetPawn()->
 	MoveToActor(APlayer);
 }
 
-void AHAI_Controller::ChangeRoad()
+
+void AHAI_Controller::ChangeRoad(FString RoadName)
 {
-	
+	AHAi* HEnemy = Cast<AHAi>(GetPawn());
+	if(HEnemy != nullptr && HEnemy->AllRoads[RoadName] != HEnemy->ActualRoad)
+	{
+		HEnemy->ActualRoad = HEnemy->AllRoads[RoadName];
+	}
 }
+
+void AHAI_Controller::MoveToSound()
+{
+	MoveToLocation(SoundPosition);
+	if(PawnAi->GetActorLocation().Equals(SoundPosition,0.1f))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, TEXT("Is iN SOUND position!"));
+		if(EnemyState != EEnemyState::LookFor)
+		{
+			GetWorld()->GetTimerManager().SetTimer(TimerToLookingFor, DelegateToLookingFor,TimeInStateLookingFor,false);
+		}
+		EnemyState = EEnemyState::LookFor;
+	}
+}
+
+void AHAI_Controller::MoveToFind()
+{
+	StopMovement();
+}
+
+void AHAI_Controller::TimerLookingFor(float LookforTime)
+{
+	if(EnemyState == EEnemyState::LookFor)
+	{
+		EnemyState = EEnemyState::Road;
+	}
+	
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("End look for!"));
+}
+
+
+
+
+
 
 
 

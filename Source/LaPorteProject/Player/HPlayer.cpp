@@ -97,25 +97,31 @@ void AHPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 #pragma region Movement
 void AHPlayer::MoveForward(float Value)
 {
-	const FRotator  Rotation = Controller->GetControlRotation();
-	const FRotator  Direction(0.f,Rotation.Yaw, 0.f);
-	const FVector ForwardDirection = FRotationMatrix(Direction).GetUnitAxis(EAxis::X);
-	
-	AddMovementInput(ForwardDirection,Value);
+	if(PlayerMovement != EPlayerMovement::Hide)
+	{
+		const FRotator  Rotation = Controller->GetControlRotation();
+		const FRotator  Direction(0.f,Rotation.Yaw, 0.f);
+		const FVector ForwardDirection = FRotationMatrix(Direction).GetUnitAxis(EAxis::X);
+		
+		AddMovementInput(ForwardDirection,Value);
+	}
 	
 }
 
 void AHPlayer::MoveRight(float Value)
 {
-	const FRotator  Rotation = Controller->GetControlRotation();
-	const FRotator  Direction(0.f,Rotation.Yaw, 0.f);
-	const FVector RightDirection = FRotationMatrix(Direction).GetUnitAxis(EAxis::Y);
-	AddMovementInput(RightDirection,Value);
+	if(PlayerMovement != EPlayerMovement::Hide)
+	{
+		const FRotator  Rotation = Controller->GetControlRotation();
+		const FRotator  Direction(0.f,Rotation.Yaw, 0.f);
+		const FVector RightDirection = FRotationMatrix(Direction).GetUnitAxis(EAxis::Y);
+		AddMovementInput(RightDirection,Value);
+	}
 }
 
 void AHPlayer::StartRun()
 {
-	if(PlayerMovement == EPlayerMovement::Walk)
+	if(PlayerMovement == EPlayerMovement::Walk && PlayerMovement != EPlayerMovement::Hide)
 	{
 		ChangeStateMovement(EPlayerMovement::Run);
 	}
@@ -180,6 +186,9 @@ void AHPlayer::ChangeStateMovement(const EPlayerMovement State)
 	case EPlayerMovement::Watch:
 		OwnUcharacterMovement->MaxWalkSpeed = 0;
 		break;
+	case EPlayerMovement::Hide:
+		OwnUcharacterMovement->MaxWalkSpeed = 0;
+		break;
 	default: ;
 	}
 
@@ -207,7 +216,6 @@ void AHPlayer::LookUpAtRate(float Rate)
 	}
 	
 }
-
 
 
 #pragma endregion Movement

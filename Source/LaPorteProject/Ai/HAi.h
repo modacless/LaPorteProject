@@ -42,5 +42,8 @@ public:
 
 	UPROPERTY(EditAnywhere, Category= AI)
 	class AHAI_RoadPointManager* ActualRoad;
+
+	UPROPERTY(EditAnywhere, Category= AI)
+	TMap<FString,AHAI_RoadPointManager*> AllRoads;
 	
 };
