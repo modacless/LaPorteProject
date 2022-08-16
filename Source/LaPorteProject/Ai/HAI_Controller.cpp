@@ -110,12 +110,17 @@ void AHAI_Controller::OnPawnDetected(AActor* SensedActor, FAIStimulus Stimulus)
 		}
 	}else
 	{
-		if(EnemyState != EEnemyState::LookFor)
+		const AHPlayer* Player = Cast<AHPlayer>(SensedActor);
+		if(Player != nullptr && !Player->IsHide )
 		{
-			GetWorld()->GetTimerManager().SetTimer(TimerToLookingFor, DelegateToLookingFor,TimeInStateLookingFor,false);
+			if(EnemyState != EEnemyState::LookFor)
+			{
+				GetWorld()->GetTimerManager().SetTimer(TimerToLookingFor, DelegateToLookingFor,TimeInStateLookingFor,false);
+			}
+			EnemyState = EEnemyState::LookFor;
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("LookFor!"));
 		}
-		EnemyState = EEnemyState::LookFor;
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("LookFor!"));
+		
 	}
 	
 }

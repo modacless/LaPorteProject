@@ -170,8 +170,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= Data)
 	float RangeInterraction;
 
-	UPROPERTY(BlueprintReadWrite, Category= "Interractable")
+	UPROPERTY(BlueprintReadWrite, Category= "Interractable", EditAnywhere)
 	AAInterractable* ObjectInHand = nullptr;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool IsHide = false;
 
 	//Timeline
 	UPROPERTY(EditAnywhere,Category = Timeline)
