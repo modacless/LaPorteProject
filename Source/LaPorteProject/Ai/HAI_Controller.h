@@ -28,6 +28,8 @@ class LAPORTEPROJECT_API AHAI_Controller : public AAIController
 {
 	GENERATED_BODY()
 
+protected:
+
 public:
 
 	AHAI_Controller();
@@ -60,6 +62,13 @@ public:
 	UFUNCTION()
 	void MoveToFind();
 
+	//Propriety
+	//Enemy Data
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float EnemyWalkSpeed = 300.f;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	float EnemyRunSpeed = 600.f;
 	
 	//Perception
 	//Timer
@@ -105,4 +114,8 @@ public:
 
 	UPROPERTY()
 	AActor* APlayer;
+
+	UPROPERTY()
+	UCharacterMovementComponent *OwnUcharacterMovement;
+
 };

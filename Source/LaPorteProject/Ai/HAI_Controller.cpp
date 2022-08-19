@@ -8,6 +8,7 @@
 
 AHAI_Controller::AHAI_Controller()
 {
+	PrimaryActorTick.bCanEverTick = true;
 	AiSenseConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sensor Config"));
 	SetPerceptionComponent(*CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Perception component")));
 	AiHearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing Component"));
@@ -38,7 +39,6 @@ AHAI_Controller::AHAI_Controller()
 	GetPerceptionComponent()->ConfigureSense(*AiSenseConfig);
 	GetPerceptionComponent()->ConfigureSense(*AiHearingConfig);
 
-
 	GetPerceptionComponent()->SetDominantSense(*AiSenseConfig->GetSenseImplementation());
 }
 
@@ -49,6 +49,7 @@ void AHAI_Controller::BeginPlay()
 	EnemyState = EEnemyState::Road;
 	APlayer = UGameplayStatics::GetPlayerCharacter(GetWorld(),0);
 	DelegateToLookingFor.BindUFunction(this,"TimerLookingFor",TimeInStateLookingFor);
+	OwnUcharacterMovement = PawnAi->FindComponentByClass<UCharacterMovementComponent>();
 }
 
 void AHAI_Controller::Tick(float DeltaSeconds)
@@ -58,15 +59,18 @@ void AHAI_Controller::Tick(float DeltaSeconds)
 	switch (EnemyState)
 	{
 	case EEnemyState::Detected:
+		OwnUcharacterMovement->MaxWalkSpeed = EnemyRunSpeed;
 		MoveToPlayer();
 		break;
 	case EEnemyState::Road:
+		OwnUcharacterMovement->MaxWalkSpeed = EnemyWalkSpeed;
 		if(EnemyState != EEnemyState::LookFor)
 		{
 			MoveToNextPoint();
 		}
 		break;
 	case EEnemyState::HearSound:
+		OwnUcharacterMovement->MaxWalkSpeed = EnemyRunSpeed;
 		MoveToSound();
 		break;
 	case EEnemyState::LookFor:
@@ -135,6 +139,7 @@ void AHAI_Controller::MoveToNextPoint()
 
 void AHAI_Controller::MoveToPlayer()
 {
+	
 	MoveToActor(APlayer);
 }
 
