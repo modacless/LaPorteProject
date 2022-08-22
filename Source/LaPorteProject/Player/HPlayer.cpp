@@ -90,6 +90,7 @@ void AHPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("LookWatch", IE_Pressed, this, &AHPlayer::LookWatch);
 
 	PlayerInputComponent->BindAction("Interract",IE_Pressed, this, &AHPlayer::PickupObject);
+	PlayerInputComponent->BindAction("Interract", IE_Released, this, &AHPlayer::RelaseAction);
 }
 
 #pragma endregion UE4_base
@@ -97,7 +98,7 @@ void AHPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 #pragma region Movement
 void AHPlayer::MoveForward(float Value)
 {
-	if(PlayerMovement != EPlayerMovement::Hide)
+	if(PlayerMovement != EPlayerMovement::Hide && PlayerMovement != EPlayerMovement::Use)
 	{
 		const FRotator  Rotation = Controller->GetControlRotation();
 		const FRotator  Direction(0.f,Rotation.Yaw, 0.f);
@@ -110,7 +111,7 @@ void AHPlayer::MoveForward(float Value)
 
 void AHPlayer::MoveRight(float Value)
 {
-	if(PlayerMovement != EPlayerMovement::Hide)
+	if(PlayerMovement != EPlayerMovement::Hide && PlayerMovement != EPlayerMovement::Use)
 	{
 		const FRotator  Rotation = Controller->GetControlRotation();
 		const FRotator  Direction(0.f,Rotation.Yaw, 0.f);
@@ -200,7 +201,7 @@ void AHPlayer::ChangeStateMovement(const EPlayerMovement State)
 void AHPlayer::TurnAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
-	if(PlayerMovement != EPlayerMovement::Watch)
+	if(PlayerMovement != EPlayerMovement::Watch && PlayerMovement != EPlayerMovement::Use)
 	{
 		AddControllerYawInput(Rate  * GetWorld()->GetDeltaSeconds() * CameraRotationSpeed);
 	}
@@ -209,8 +210,9 @@ void AHPlayer::TurnAtRate(float Rate)
 
 void AHPlayer::LookUpAtRate(float Rate)
 {
+	TurnRate = Rate;
 	// calculate delta for this frame from the rate information
-	if(PlayerMovement != EPlayerMovement::Watch)
+	if(PlayerMovement != EPlayerMovement::Watch && PlayerMovement != EPlayerMovement::Use)
 	{
 		AddControllerPitchInput(Rate  * GetWorld()->GetDeltaSeconds() * CameraRotationSpeed);
 	}
@@ -336,9 +338,20 @@ void AHPlayer::PickupObject()
 				InterractableObject->Execute_Interract(InterractableObject->_getUObject());
 			}
 		}
+		
 	}else
 	{
 		ObjectInHand->Execute_StopInterract(ObjectInHand->_getUObject());
+	}
+}
+
+void AHPlayer::RelaseAction()
+{
+	if(PlayerMovement == EPlayerMovement::Use)
+	{
+		ObjectInHand->Execute_StopInterract(ObjectInHand->_getUObject());
+		PlayerMovement = EPlayerMovement::Walk;
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("StopUse")));
 	}
 }
 
