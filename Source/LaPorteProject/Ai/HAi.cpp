@@ -12,6 +12,8 @@ AHAi::AHAi()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = false;
+
+	BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision check hide place"));
 	
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f,500.0f,0.0f);

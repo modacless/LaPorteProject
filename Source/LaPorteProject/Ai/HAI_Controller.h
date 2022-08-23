@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "HAi.h"
-#include "Perception/AIPerceptionComponent.h"
 #include "LaPorteProject/Player/HPlayer.h"
 #include "Perception/AISenseConfig_Hearing.h"
 #include "Perception/AISenseConfig_Sight.h"

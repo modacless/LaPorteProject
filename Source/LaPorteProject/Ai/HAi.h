@@ -45,5 +45,8 @@ public:
 
 	UPROPERTY(EditAnywhere, Category= AI)
 	TMap<FString,AHAI_RoadPointManager*> AllRoads;
+
+	UPROPERTY(VisibleAnywhere)
+	UBoxComponent* BoxCollision = nullptr;
 	
 };

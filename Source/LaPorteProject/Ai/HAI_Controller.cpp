@@ -9,9 +9,13 @@
 AHAI_Controller::AHAI_Controller()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	AiSenseConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sensor Config"));
 	SetPerceptionComponent(*CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Perception component")));
+	AiSenseConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sensor Config"));
 	AiHearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing Component"));
+	
+	GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this,&AHAI_Controller::OnPawnDetected);
+	GetPerceptionComponent()->SetDominantSense(*AiSenseConfig->GetSenseImplementation());
+
 	if(AiSenseConfig)
 	{
 		AILostSightRadius += AISightRadius;
@@ -22,8 +26,6 @@ AHAI_Controller::AHAI_Controller()
 		AiSenseConfig->DetectionByAffiliation.bDetectEnemies = true;
 		AiSenseConfig->DetectionByAffiliation.bDetectNeutrals = true;
 		AiSenseConfig->DetectionByAffiliation.bDetectFriendlies = true;
-		//GetPerceptionComponent()->OnTargetPerceptionUpdated(this,)
-		//
 	}
 
 	if(AiHearingConfig)
@@ -34,22 +36,21 @@ AHAI_Controller::AHAI_Controller()
 		AiHearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
 		
 	}
-
-	GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this,&AHAI_Controller::OnPawnDetected);
 	GetPerceptionComponent()->ConfigureSense(*AiSenseConfig);
 	GetPerceptionComponent()->ConfigureSense(*AiHearingConfig);
-
-	GetPerceptionComponent()->SetDominantSense(*AiSenseConfig->GetSenseImplementation());
+	
 }
 
 void AHAI_Controller::BeginPlay()
 {
 	Super::BeginPlay();
 	PawnAi = Cast<AHAi>(GetPawn());
+	PawnAi->BoxCollision->SetBoxExtent(FVector(AISightRadius,AISightRadius,64));
 	EnemyState = EEnemyState::Road;
 	APlayer = UGameplayStatics::GetPlayerCharacter(GetWorld(),0);
 	DelegateToLookingFor.BindUFunction(this,"TimerLookingFor",TimeInStateLookingFor);
 	OwnUcharacterMovement = PawnAi->FindComponentByClass<UCharacterMovementComponent>();
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, AiHearingConfig);
 }
 
 void AHAI_Controller::Tick(float DeltaSeconds)
@@ -93,9 +94,9 @@ void AHAI_Controller::OnPawnDetected(AActor* SensedActor, FAIStimulus Stimulus)
 {
 	if(Stimulus.WasSuccessfullySensed())
 	{
-		if(Stimulus.Type == AiHearingConfig->GetSenseID())
+		if(Stimulus.Type == AiHearingConfig->GetSenseID() && EnemyState != EEnemyState::Detected)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Heard!"));
+			
 			EnemyState = EEnemyState::HearSound;
 			SoundPosition = Stimulus.StimulusLocation;
 		}
@@ -139,7 +140,6 @@ void AHAI_Controller::MoveToNextPoint()
 
 void AHAI_Controller::MoveToPlayer()
 {
-	
 	MoveToActor(APlayer);
 }
 
@@ -171,7 +171,9 @@ void AHAI_Controller::MoveToSound()
 
 void AHAI_Controller::MoveToFind()
 {
-	StopMovement();
+	//StopMovement();
+	
+	
 }
 
 void AHAI_Controller::TimerLookingFor(float LookforTime)
