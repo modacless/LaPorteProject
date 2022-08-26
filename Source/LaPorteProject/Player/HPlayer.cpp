@@ -42,17 +42,6 @@ void AHPlayer::BeginPlay()
 	{
 		UE_LOG(LogTemp,Fatal,TEXT("No game instance found"))
 	}
-
-	//Bind timeline
-	if(CurveFloat)
-	{
-		//FOnTimelineFloat TimeLineProgress;
-		//TimeLineProgress.BindUFunction(this,FName("TimeLineProgress"));
-		UpdateFunctionFloatCameraTimeLine.BindDynamic(this, &AHPlayer::UpdateTimeLineCameraInProgress);
-		
-		CurvedTimeLine->SetTimelineLength(1.f);
-		CurvedTimeLine->AddInterpFloat(CurveFloat,UpdateFunctionFloatCameraTimeLine);
-	}
 	
 }
 
@@ -65,6 +54,8 @@ void AHPlayer::Tick(float DeltaTime)
 	CurvedTimeLine->TickComponent(DeltaTime, ELevelTick::LEVELTICK_TimeOnly, NULL);
 
 	SetActorRelativeRotation(FRotator(0.f,Controller->GetControlRotation().Yaw, 0.f));
+
+	RaycastUiShow();
 	
 	bUseControllerRotationPitch = true;
 	bUseControllerRotationYaw = true;
@@ -253,35 +244,6 @@ void AHPlayer::LookWatch()
 	}
 }
 
-void AHPlayer::UpdateTimeLineCameraInProgress(float Value)
-{
-
-	//const float Angle = FMath::Acos(FVector::DotProduct(GetActorUpVector(), FVector::UpVector));
-	//const FVector Axis = FVector::CrossProduct(GetActorForwardVector(), -FVector::UpVector).GetSafeNormal();
-	//const FQuat DeltaRotation = FQuat(Axis, Angle);
-	
-	//GetController()->SetControlRotation(DeltaRotation.Rotator());
-	//GetController()->ClientSetRotation(FRotator(FMath::Lerp(GetController()->GetControlRotation().Pitch,-40.f,Value),GetController()->GetControlRotation().Yaw,0));
-
-	//GetController()->ClientSetRotation(FRotator(FMath::Lerp(GetController()->GetControlRotation().Pitch,-40.f,Value),GetController()->GetControlRotation().Yaw,0));
-	//	GetController()->ClientSetRotation(FRotator(0.f,0.f, 0.f));
-	//GetController()->ClientSetRotation(FRotator(-90,0,0));
-	//CameraComp->SetWorldLocation(FMath::Lerp(CameraComp->GetComponentLocation(),GoalTransformCamera.GetLocation(),Value));
-	//CameraComp->SetWorldRotation(FMath::Lerp(FQuat(CameraComp->GetComponentRotation()),FQuat(GoalTransformCamera.GetRotation()),Value));
-	//Cast<AHPlayer_Controller>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->LookWatchRotation(Value,CameraOriginLocation->GetComponentRotation(),GoalTransformCamera.Rotator());
-
-	/*const float Angle = FMath::Acos(FVector::DotProduct(GetActorUpVector(), FVector::UpVector));
-	const FVector Axis = FVector::CrossProduct(GetActorUpVector(), FVector::UpVector).GetSafeNormal();
-	const FQuat DeltaRotation = FQuat(Axis, Angle);
-	AHPlayer_Controller *Player_Controller = Cast<AHPlayer_Controller>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	CameraComp->AddRelativeRotation(DeltaRotation);*/
-	
-	//FRotator rot = FMath::Lerp(FQuat(CameraComp->GetComponentRotation()),FQuat(GoalTransformCamera.GetRotation()),Value).Rotator();
-	//AHPlayer_Controller *Player_Controller = Cast<AHPlayer_Controller>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	//Player_Controller->K2_SetActorRotation(rot,false);
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Watch %f"),GetController()->GetControlRotation().Pitch));
-}
-
 //Raycast that check if there is an object which can be interract
 FVector_NetQuantize AHPlayer::TargetObject(float Range)
 {
@@ -311,7 +273,6 @@ FVector_NetQuantize AHPlayer::TargetObject(float Range)
 
 void AHPlayer::PickupObject()
 {
-
 	if(ObjectInHand == nullptr)
 	{
 		FHitResult OutHit;
@@ -342,6 +303,46 @@ void AHPlayer::PickupObject()
 	}else
 	{
 		ObjectInHand->Execute_StopInterract(ObjectInHand->_getUObject());
+	}
+}
+
+
+void AHPlayer::RaycastUiShow()
+{
+	if(ObjectInHand == nullptr)
+	{
+		FHitResult OutHit;
+		FVector CamLoc;
+		FRotator CamRot;
+	
+		Controller->GetPlayerViewPoint(CamLoc, CamRot); // Get the camera position and rotation
+		const FVector StartTrace = CamLoc; // trace start is the camera location
+		const FVector Direction = CamRot.Vector();
+	
+		const FVector EndTrace = StartTrace + Direction * RangeInterraction;
+
+		FCollisionQueryParams TraceParams;
+		TraceParams.AddIgnoredActor(this);
+
+		bool hitTrace = GetWorld()->LineTraceSingleByChannel(OutHit, StartTrace,EndTrace, ECC_Visibility, TraceParams);
+		if(hitTrace)
+		{
+			AAInterractable *InterractableObject = Cast<AAInterractable>(OutHit.Actor);
+			if(InterractableObject)
+			{
+				TextToShow = FText::FromString("Press E to " + InterractableObject->TextToShowUi.ToString());
+			}else
+			{
+				TextToShow = FText::GetEmpty();
+			}
+		}else
+		{
+			TextToShow = FText::GetEmpty();
+		}
+	}
+	else
+	{
+		TextToShow = FText::GetEmpty();
 	}
 }
 

@@ -37,10 +37,7 @@ private:
 
 	//Timeline
 	FOnTimelineFloat UpdateFunctionFloatCameraTimeLine;
-
-	UFUNCTION()
-	void UpdateTimeLineCameraInProgress(float Value);
-
+	
 	FTransform GoalTransformCamera;
 
 protected:
@@ -71,7 +68,7 @@ protected:
 	// Arrow Component for the Camera Origin viewpoint location
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	class UArrowComponent* CameraOriginLocation;
-
+	
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	//class UCameraComponent* CameraComp;
 
@@ -125,6 +122,9 @@ public:
 
 	void RelaseAction();
 
+	UFUNCTION()
+	void RaycastUiShow();
+	
 	//Will change
 	void StartTime()
 	{
@@ -185,4 +185,9 @@ public:
 	//Timeline
 	UPROPERTY(EditAnywhere,Category = Timeline)
 	UCurveFloat* CurveFloat;
+
+	//Ui
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= Ai)
+	FText TextToShow;
+	
 };
