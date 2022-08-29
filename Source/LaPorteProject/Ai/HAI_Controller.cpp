@@ -158,7 +158,7 @@ void AHAI_Controller::MoveToSound()
 	MoveToLocation(SoundPosition);
 	const FVector HaiPosition(PawnAi->GetActorLocation().X,PawnAi->GetActorLocation().Y,0);
 	SoundPosition.Z = 0;
-	if(HaiPosition.Equals(SoundPosition,50.f))
+	if(HaiPosition.Equals(SoundPosition,150.f))
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, TEXT("Is iN SOUND position!"));
 		if(EnemyState != EEnemyState::LookFor)
@@ -172,8 +172,6 @@ void AHAI_Controller::MoveToSound()
 void AHAI_Controller::MoveToFind()
 {
 	//StopMovement();
-	
-	
 }
 
 void AHAI_Controller::TimerLookingFor(float LookforTime)
