@@ -13,10 +13,11 @@ AHAi::AHAi()
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = false;
 
-	BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision check hide place"));
+	BoxCollisionHide = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision check hide place"));
 	
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f,500.0f,0.0f);
+	
 }
 
 // Called when the game starts or when spawned

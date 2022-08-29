@@ -3,6 +3,7 @@
 
 #include "HAI_Controller.h"
 
+#include "LaPorteProject/TimeObject/OpenClose.h"
 #include "Perception/AISenseConfig_Hearing.h"
 
 
@@ -45,12 +46,14 @@ void AHAI_Controller::BeginPlay()
 {
 	Super::BeginPlay();
 	PawnAi = Cast<AHAi>(GetPawn());
-	PawnAi->BoxCollision->SetBoxExtent(FVector(AISightRadius,AISightRadius,64));
+	PawnAi->BoxCollisionHide->SetBoxExtent(FVector(AISightRadius,AISightRadius,64));
 	EnemyState = EEnemyState::Road;
 	APlayer = UGameplayStatics::GetPlayerCharacter(GetWorld(),0);
 	DelegateToLookingFor.BindUFunction(this,"TimerLookingFor",TimeInStateLookingFor);
 	OwnUcharacterMovement = PawnAi->FindComponentByClass<UCharacterMovementComponent>();
-	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, AiHearingConfig);
+
+	PawnAi->BoxCollisionHide->OnComponentBeginOverlap.AddDynamic(this,&AHAI_Controller::BeginOverlapHidingPlace);
+	PawnAi->BoxCollisionHide->OnComponentEndOverlap.AddDynamic(this,&AHAI_Controller::EndOverlapHidingPlace);
 }
 
 void AHAI_Controller::Tick(float DeltaSeconds)
@@ -77,7 +80,18 @@ void AHAI_Controller::Tick(float DeltaSeconds)
 	case EEnemyState::LookFor:
 		MoveToFind();
 		break;
+	case EEnemyState::CheckAround:
+		CheckAround();
+		break;
+	case EEnemyState::CheckHide:
+		MoveToHidePlace();
+		break;
+	case EEnemyState::CheckInsideHidePlace:
+		CheckInsideHide();
+		break;
+		
 	}
+
 }
 
 FRotator AHAI_Controller::GetControlRotation() const
@@ -94,35 +108,45 @@ void AHAI_Controller::OnPawnDetected(AActor* SensedActor, FAIStimulus Stimulus)
 {
 	if(Stimulus.WasSuccessfullySensed())
 	{
+		//Can hear player
 		if(Stimulus.Type == AiHearingConfig->GetSenseID() && EnemyState != EEnemyState::Detected)
 		{
-			
 			EnemyState = EEnemyState::HearSound;
 			SoundPosition = Stimulus.StimulusLocation;
 		}
 
+		//Can see player
 		if(Stimulus.Type == AiSenseConfig->GetSenseID())
 		{
 			const AHPlayer* Player = Cast<AHPlayer>(SensedActor);
 			if(Player != nullptr)
 			{
+				//if player is not hide
 				if(Player->PlayerMovement != EPlayerMovement::Hide)
 				{
 					EnemyState = EEnemyState::Detected;
 					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Find!"));	
+				}else
+				{
+					//if player hide in front of enemy
+					if(EnemyState == EEnemyState::Detected)
+					{
+						EnemyState = EEnemyState::LookFor;
+					}else
+					{
+						
+					}
+
 				}
 			}
 		}
 	}else
 	{
 		const AHPlayer* Player = Cast<AHPlayer>(SensedActor);
-		if(Player != nullptr && !Player->IsHide )
+		if(Player != nullptr && !Player->IsHide)
 		{
-			if(EnemyState != EEnemyState::LookFor)
-			{
-				GetWorld()->GetTimerManager().SetTimer(TimerToLookingFor, DelegateToLookingFor,TimeInStateLookingFor,false);
-			}
-			EnemyState = EEnemyState::LookFor;
+			GetWorld()->GetTimerManager().SetTimer(TimerToLookingFor, DelegateToLookingFor,TimeInStateLookingFor,false);
+			EnemyState = EEnemyState::CheckAround;
 			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("LookFor!"));
 		}
 		
@@ -161,24 +185,88 @@ void AHAI_Controller::MoveToSound()
 	if(HaiPosition.Equals(SoundPosition,150.f))
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, TEXT("Is iN SOUND position!"));
-		if(EnemyState != EEnemyState::LookFor)
-		{
-			GetWorld()->GetTimerManager().SetTimer(TimerToLookingFor, DelegateToLookingFor,TimeInStateLookingFor,false);
-		}
-		EnemyState = EEnemyState::LookFor;
+		EnemyState = EEnemyState::CheckAround;
+		GetWorld()->GetTimerManager().SetTimer(TimerToLookingFor, DelegateToLookingFor,TimeInStateLookingFor,false);
 	}
 }
 
 void AHAI_Controller::MoveToFind()
 {
 	//StopMovement();
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("MoveToFind!"));
+	if(HidingPlaceToCheck.Num() > 0)
+	{
+		ObjectToCheck = HidingPlaceToCheck.Pop();
+		EnemyState = EEnemyState::CheckHide;
+	}else
+	{
+		//GetWorld()->GetTimerManager().SetTimer(TimerToLookingFor, DelegateToLookingFor,TimeInStateLookingFor,false);
+		EnemyState = EEnemyState::Road;
+	}
 }
+
+void AHAI_Controller::MoveToHidePlace()
+{
+	MoveToActor(ObjectToCheck);
+	const FVector PlaceToCheck(ObjectToCheck->GetActorLocation().X,ObjectToCheck->GetActorLocation().Y,0);
+	const FVector HaiPosition(PawnAi->GetActorLocation().X,PawnAi->GetActorLocation().Y,0) ;
+	if(HaiPosition.Equals(PlaceToCheck,150.f))
+	{
+		EnemyState = EEnemyState::CheckInsideHidePlace;
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("In Hiding place!"));
+	}
+}
+
+void AHAI_Controller::CheckAround()
+{
+	StopMovement();
+}
+
+void AHAI_Controller::CheckInsideHide()
+{
+	StopMovement();
+	if(ObjectToCheck != nullptr)
+	{
+		bool hasOpenClose = UKismetSystemLibrary::DoesImplementInterface(ObjectToCheck, UOpenClose::StaticClass());
+		if(	hasOpenClose)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, TEXT("Open Door!"));
+			IOpenClose::Execute_Open(ObjectToCheck);
+			EnemyState = EEnemyState::LookFor;
+		}
+	}
+}
+
+void AHAI_Controller::BeginOverlapHidingPlace(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+                                              UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	AAInterractable* obj = Cast<AAInterractable>(OtherActor);
+	
+	if(obj != nullptr && obj->Tags.Contains("HidingPlace") && !HidingPlaceToCheck.Contains(obj))
+	{
+		HidingPlaceToCheck.AddUnique(obj);
+	}
+}
+
+void AHAI_Controller::EndOverlapHidingPlace(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	AAInterractable* obj = Cast<AAInterractable>(OtherActor);
+
+	if(obj != nullptr && obj->Tags.Contains("HidingPlace") && HidingPlaceToCheck.Contains(obj))
+	{
+		HidingPlaceToCheck.Remove(obj);
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("Delete Object!"));
+	}
+}
+
+
 
 void AHAI_Controller::TimerLookingFor(float LookforTime)
 {
-	if(EnemyState == EEnemyState::LookFor)
+	if(EnemyState != EEnemyState::Detected)
 	{
-		EnemyState = EEnemyState::Road;
+		EnemyState = EEnemyState::LookFor;
 	}
 	
 	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("End look for!"));

@@ -16,18 +16,16 @@ enum class EEnemyState : uint8 {
 	Detected   UMETA(DisplayName="Detect Player"),
 	LookFor	   UMETA(DisplayName="Look for Player"),
 	HearSound  UMETA(DisplayName ="Hear sound"),
+	CheckHide UMETA(DisplayName = "Check hiding place"),
+	CheckAround UMETA(DisplayName = "Check around"),
+	CheckInsideHidePlace UMETA(DisplayName = "Check inside hinding place"),
+	KillPlayer UMETA(DisplayName = "KillPlayer")
 };
 
-
-/**
- * 
- */
 UCLASS()
 class LAPORTEPROJECT_API AHAI_Controller : public AAIController
 {
 	GENERATED_BODY()
-
-protected:
 
 public:
 
@@ -61,6 +59,21 @@ public:
 	UFUNCTION()
 	void MoveToFind();
 
+	UFUNCTION()
+	void MoveToHidePlace();
+
+	UFUNCTION()
+	void CheckAround();
+
+	UFUNCTION()
+	void CheckInsideHide();
+
+	UFUNCTION()
+	void BeginOverlapHidingPlace(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void EndOverlapHidingPlace(UPrimitiveComponent* OverlappedComp,AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	
 	//Propriety
 	//Enemy Data
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -84,6 +97,11 @@ public:
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category= AI)
 	float AISightFieldOfView = 120.f;
 
+	UPROPERTY()
+	TArray<AAInterractable*> HidingPlaceToCheck;
+	UPROPERTY()
+	AActor* ObjectToCheck;
+
 	//Hearing
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category= AI)
 	float AIHearingRadius = 3000.f;
@@ -99,7 +117,7 @@ public:
 	EEnemyState EnemyState;
 
 	UPROPERTY(EditAnywhere)
-	float TimeInStateLookingFor = 10.f; // Time in second during ai searching player
+	float TimeInStateLookingFor = 5.f; // Time in second during ai searching player
 
 	//Component
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category= AI)
@@ -116,5 +134,7 @@ public:
 
 	UPROPERTY()
 	UCharacterMovementComponent *OwnUcharacterMovement;
-
+	
+	
 };
+

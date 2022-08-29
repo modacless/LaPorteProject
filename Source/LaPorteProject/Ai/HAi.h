@@ -36,6 +36,9 @@ public:
 	UFUNCTION()
 	void ChangeToNextRoad();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void RotateHead();
+
 	//Propriety
 	UPROPERTY(EditAnywhere,Category= AI)
     class UBehaviorTree *BehaviorTree;
@@ -47,6 +50,6 @@ public:
 	TMap<FString,AHAI_RoadPointManager*> AllRoads;
 
 	UPROPERTY(VisibleAnywhere)
-	UBoxComponent* BoxCollision = nullptr;
+	UBoxComponent* BoxCollisionHide = nullptr;
 	
 };

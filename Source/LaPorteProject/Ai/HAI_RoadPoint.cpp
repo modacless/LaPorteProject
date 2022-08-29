@@ -16,8 +16,6 @@ AHAI_RoadPoint::AHAI_RoadPoint()
 void AHAI_RoadPoint::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	
 }
 
 // Called every frame
@@ -27,15 +25,30 @@ void AHAI_RoadPoint::Tick(float DeltaTime)
 
 }
 
-void AHAI_RoadPoint::OnAiEnter_Implementation(UPrimitiveComponent* OverlapComponent,AActor* OtherActor,UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult)
+void AHAI_RoadPoint::OnAiExit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex)
 {
 	AHAi* HorrorBot = nullptr;
 	if(OtherActor != nullptr)
 	{
 		HorrorBot = Cast<AHAi>(OtherActor);
-		if(HorrorBot != nullptr)
+		if(HorrorBot != nullptr && HorrorBot->ActualRoad == PointManager && OtherComp != HorrorBot->BoxCollisionHide)
+		{
+			isEnter = false;
+		}
+	}
+}
+
+void AHAI_RoadPoint::OnAiEnter_Implementation(UPrimitiveComponent* OverlapComponent,AActor* OtherActor,UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult)
+{
+	AHAi* HorrorBot = nullptr;
+	if(OtherActor != nullptr && !isEnter)
+	{
+		HorrorBot = Cast<AHAi>(OtherActor);
+		if(HorrorBot != nullptr && HorrorBot->ActualRoad == PointManager && OtherComponent != HorrorBot->BoxCollisionHide)
 		{
 			HorrorBot->ActualRoad->NextPoint();
+			isEnter = true;
 		}
 	}
 }
