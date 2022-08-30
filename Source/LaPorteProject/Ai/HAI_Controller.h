@@ -57,10 +57,10 @@ public:
 	void TimerLookingFor(float LookforTime);
 
 	UFUNCTION()
-	void MoveToFind();
+	void LookFor();
 
 	UFUNCTION()
-	void MoveToHidePlace();
+	void CheckHide();
 
 	UFUNCTION()
 	void CheckAround();

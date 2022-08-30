@@ -28,4 +28,7 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent,BlueprintCallable,Category= Door)
 	void Close();
+
+	UFUNCTION(BlueprintNativeEvent,BlueprintCallable,Category= Door)
+	FVector GetPositionForInterraction();
 };

@@ -3,6 +3,7 @@
 
 #include "HAI_Controller.h"
 
+#include "Kismet/KismetMathLibrary.h"
 #include "LaPorteProject/TimeObject/OpenClose.h"
 #include "Perception/AISenseConfig_Hearing.h"
 
@@ -78,20 +79,20 @@ void AHAI_Controller::Tick(float DeltaSeconds)
 		MoveToSound();
 		break;
 	case EEnemyState::LookFor:
-		MoveToFind();
+		LookFor();
 		break;
 	case EEnemyState::CheckAround:
 		CheckAround();
 		break;
 	case EEnemyState::CheckHide:
-		MoveToHidePlace();
+		CheckHide();
 		break;
 	case EEnemyState::CheckInsideHidePlace:
 		CheckInsideHide();
 		break;
 		
 	}
-
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, *UEnum::GetValueAsString(EnemyState));
 }
 
 FRotator AHAI_Controller::GetControlRotation() const
@@ -165,6 +166,14 @@ void AHAI_Controller::MoveToNextPoint()
 void AHAI_Controller::MoveToPlayer()
 {
 	MoveToActor(APlayer);
+	const AHPlayer* Player = Cast<AHPlayer>(APlayer);
+	if(Player)
+	{
+		if(Player->IsHide)
+		{
+			EnemyState = EEnemyState::LookFor;
+		}
+	}
 }
 
 
@@ -190,10 +199,10 @@ void AHAI_Controller::MoveToSound()
 	}
 }
 
-void AHAI_Controller::MoveToFind()
+void AHAI_Controller::LookFor()
 {
 	//StopMovement();
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("MoveToFind!"));
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("LookFor!"));
 	if(HidingPlaceToCheck.Num() > 0)
 	{
 		ObjectToCheck = HidingPlaceToCheck.Pop();
@@ -205,12 +214,13 @@ void AHAI_Controller::MoveToFind()
 	}
 }
 
-void AHAI_Controller::MoveToHidePlace()
+void AHAI_Controller::CheckHide()
 {
-	MoveToActor(ObjectToCheck);
-	const FVector PlaceToCheck(ObjectToCheck->GetActorLocation().X,ObjectToCheck->GetActorLocation().Y,0);
+	FVector PlaceToCheck = IOpenClose::Execute_GetPositionForInterraction(ObjectToCheck);
+	MoveToLocation(PlaceToCheck);
+	PlaceToCheck.Z = 0;
 	const FVector HaiPosition(PawnAi->GetActorLocation().X,PawnAi->GetActorLocation().Y,0) ;
-	if(HaiPosition.Equals(PlaceToCheck,150.f))
+	if(HaiPosition.Equals(PlaceToCheck,50.f))
 	{
 		EnemyState = EEnemyState::CheckInsideHidePlace;
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("In Hiding place!"));
@@ -228,11 +238,22 @@ void AHAI_Controller::CheckInsideHide()
 	if(ObjectToCheck != nullptr)
 	{
 		bool hasOpenClose = UKismetSystemLibrary::DoesImplementInterface(ObjectToCheck, UOpenClose::StaticClass());
+		FVector PlaceToCheck = IOpenClose::Execute_GetPositionForInterraction(ObjectToCheck);
+		PlaceToCheck.Z = 0;
 		if(	hasOpenClose)
 		{
+			FRotator endRotation = UKismetMathLibrary::FindLookAtRotation(GetPawn()->GetActorLocation(),PlaceToCheck);
+			SetControlRotation(endRotation);
 			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, TEXT("Open Door!"));
 			IOpenClose::Execute_Open(ObjectToCheck);
-			EnemyState = EEnemyState::LookFor;
+			EnemyState = EEnemyState::CheckAround;
+			GetWorld()->GetTimerManager().SetTimer(TimerToLookingFor, DelegateToLookingFor,TimeInStateLookingFor/2,false);
+
+			AHPlayer* Player = Cast<AHPlayer>(APlayer);
+			if(Player && Player->HideInObject == ObjectToCheck)
+			{
+				Player->Die();
+			}
 		}
 	}
 }

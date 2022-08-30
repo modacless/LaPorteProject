@@ -141,6 +141,9 @@ public:
 		
 	};
 
+	UFUNCTION(BlueprintImplementableEvent,BlueprintCallable)
+	void Die();
+
 	//Property//
 
 	//Movement
@@ -181,6 +184,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	bool IsHide = false;
+
+	UPROPERTY(BlueprintReadWrite,VisibleAnywhere)
+	AActor* HideInObject;
 
 	//Timeline
 	UPROPERTY(EditAnywhere,Category = Timeline)
