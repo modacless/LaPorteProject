@@ -89,7 +89,7 @@ void AHPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 #pragma region Movement
 void AHPlayer::MoveForward(float Value)
 {
-	if(PlayerMovement != EPlayerMovement::Hide && PlayerMovement != EPlayerMovement::Use)
+	if(PlayerMovement != EPlayerMovement::Hide && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die)
 	{
 		const FRotator  Rotation = Controller->GetControlRotation();
 		const FRotator  Direction(0.f,Rotation.Yaw, 0.f);
@@ -102,7 +102,7 @@ void AHPlayer::MoveForward(float Value)
 
 void AHPlayer::MoveRight(float Value)
 {
-	if(PlayerMovement != EPlayerMovement::Hide && PlayerMovement != EPlayerMovement::Use)
+	if(PlayerMovement != EPlayerMovement::Hide && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die)
 	{
 		const FRotator  Rotation = Controller->GetControlRotation();
 		const FRotator  Direction(0.f,Rotation.Yaw, 0.f);
@@ -192,7 +192,7 @@ void AHPlayer::ChangeStateMovement(const EPlayerMovement State)
 void AHPlayer::TurnAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
-	if(PlayerMovement != EPlayerMovement::Watch && PlayerMovement != EPlayerMovement::Use)
+	if(PlayerMovement != EPlayerMovement::Watch && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die)
 	{
 		AddControllerYawInput(Rate  * GetWorld()->GetDeltaSeconds() * CameraRotationSpeed);
 	}
@@ -203,7 +203,7 @@ void AHPlayer::LookUpAtRate(float Rate)
 {
 	TurnRate = Rate;
 	// calculate delta for this frame from the rate information
-	if(PlayerMovement != EPlayerMovement::Watch && PlayerMovement != EPlayerMovement::Use)
+	if(PlayerMovement != EPlayerMovement::Watch && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die)
 	{
 		AddControllerPitchInput(Rate  * GetWorld()->GetDeltaSeconds() * CameraRotationSpeed);
 	}
@@ -262,7 +262,7 @@ FVector_NetQuantize AHPlayer::TargetObject(float Range)
 
 	DrawDebugLine(GetWorld(),StartTrace,EndTrace, FColor::Red,false ,1,0,1);
 	bool hitTrace = GetWorld()->LineTraceSingleByChannel(OutHit, StartTrace,EndTrace, ECC_Visibility, TraceParams);
-	if(hitTrace)
+	if(hitTrace && PlayerMovement != EPlayerMovement::Die)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, FString::Printf(TEXT("Watch %s"),*OutHit.Actor->GetName()));
 		return OutHit.Location;
@@ -302,7 +302,11 @@ void AHPlayer::PickupObject()
 		
 	}else
 	{
-		ObjectInHand->Execute_StopInterract(ObjectInHand->_getUObject());
+		if(PlayerMovement != EPlayerMovement::Die)
+		{
+			ObjectInHand->Execute_StopInterract(ObjectInHand->_getUObject());
+		}
+
 	}
 }
 
@@ -325,7 +329,7 @@ void AHPlayer::RaycastUiShow()
 		TraceParams.AddIgnoredActor(this);
 
 		bool hitTrace = GetWorld()->LineTraceSingleByChannel(OutHit, StartTrace,EndTrace, ECC_Visibility, TraceParams);
-		if(hitTrace)
+		if(hitTrace && PlayerMovement != EPlayerMovement::Die)
 		{
 			AAInterractable *InterractableObject = Cast<AAInterractable>(OutHit.Actor);
 			if(InterractableObject)

@@ -21,7 +21,8 @@ enum class EPlayerMovement : uint8
 	Walk  = 0   UMETA(DisplayName = "Walk"),
 	Watch = 2 UMETA(DisplayName = "Watch"),
 	Hide = 3 UMETA(DisplayName = "Hide"),
-	Use = 4 UMETA(DisplayName = "Using an object")
+	Use = 4 UMETA(DisplayName = "Using an object"),
+	Die = 5 UMETA(DisplayName = "Die")
 };
 
 UCLASS()
