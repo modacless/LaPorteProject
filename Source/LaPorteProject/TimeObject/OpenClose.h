@@ -29,6 +29,12 @@ public:
 	UFUNCTION(BlueprintImplementableEvent,BlueprintCallable,Category= Door)
 	void Close();
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable,Category= Door)
+	void OpenWithTransform(FVector PawnPosition);
+
+	UFUNCTION(BlueprintImplementableEvent,BlueprintCallable,Category= Door)
+	void CloseWithTransform(FVector PawnPosition);
+
 	UFUNCTION(BlueprintNativeEvent,BlueprintCallable,Category= Door)
 	FVector GetPositionForInterraction();
 };

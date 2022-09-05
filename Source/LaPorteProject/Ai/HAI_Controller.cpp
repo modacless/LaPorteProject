@@ -3,6 +3,7 @@
 
 #include "HAI_Controller.h"
 
+#include "DrawDebugHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "LaPorteProject/TimeObject/OpenClose.h"
 #include "Perception/AISenseConfig_Hearing.h"
@@ -55,6 +56,8 @@ void AHAI_Controller::BeginPlay()
 
 	PawnAi->BoxCollisionHide->OnComponentBeginOverlap.AddDynamic(this,&AHAI_Controller::BeginOverlapHidingPlace);
 	PawnAi->BoxCollisionHide->OnComponentEndOverlap.AddDynamic(this,&AHAI_Controller::EndOverlapHidingPlace);
+
+	PawnMesh = PawnAi->GetMesh();
 }
 
 void AHAI_Controller::Tick(float DeltaSeconds)
@@ -92,7 +95,9 @@ void AHAI_Controller::Tick(float DeltaSeconds)
 		break;
 		
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, *UEnum::GetValueAsString(EnemyState));
+
+	OpenDoor();
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, *UEnum::GetValueAsString(EnemyState));
 }
 
 FRotator AHAI_Controller::GetControlRotation() const
@@ -258,6 +263,37 @@ void AHAI_Controller::CheckInsideHide()
 	}
 }
 
+void AHAI_Controller::OpenDoor()
+{
+	FHitResult OutHit;
+	FVector CamLoc;
+	FRotator CamRot;
+
+	const FVector StartTrace = PawnAi->GetActorLocation(); // trace start is the camera location
+	FVector Direction = FVector::ZeroVector;
+	if(PawnMesh)
+	{
+		Direction = PawnMesh->GetRightVector();
+	}
+	
+	const FVector EndTrace = StartTrace + Direction * 100;
+
+	FCollisionQueryParams TraceParams;
+	TraceParams.AddIgnoredActor(this);
+	DrawDebugLine(GetWorld(),StartTrace,EndTrace, FColor::Green,false ,1,0,1);
+	bool hitTrace = GetWorld()->LineTraceSingleByChannel(OutHit, StartTrace,EndTrace, ECC_Visibility, TraceParams);
+	if(hitTrace)
+	{
+		if(OutHit.Actor != nullptr && OutHit.Actor->Tags.Contains("Door"))
+		{
+			IOpenClose::Execute_OpenWithTransform(OutHit.GetActor(),PawnAi->GetActorLocation());
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("Open"));
+			
+		}
+		
+	}
+}
+
 void AHAI_Controller::BeginOverlapHidingPlace(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
                                               UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -266,6 +302,7 @@ void AHAI_Controller::BeginOverlapHidingPlace(UPrimitiveComponent* OverlappedCom
 	if(obj != nullptr && obj->Tags.Contains("HidingPlace") && !HidingPlaceToCheck.Contains(obj))
 	{
 		HidingPlaceToCheck.AddUnique(obj);
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("Add Object!"));
 	}
 }
 
@@ -277,7 +314,7 @@ void AHAI_Controller::EndOverlapHidingPlace(UPrimitiveComponent* OverlappedComp,
 	if(obj != nullptr && obj->Tags.Contains("HidingPlace") && HidingPlaceToCheck.Contains(obj))
 	{
 		HidingPlaceToCheck.Remove(obj);
-		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("Delete Object!"));
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("Delete Object!"));
 	}
 }
 
