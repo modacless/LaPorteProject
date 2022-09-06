@@ -52,6 +52,7 @@ void AHAI_Controller::BeginPlay()
 	EnemyState = EEnemyState::Road;
 	APlayer = UGameplayStatics::GetPlayerCharacter(GetWorld(),0);
 	DelegateToLookingFor.BindUFunction(this,"TimerLookingFor",TimeInStateLookingFor);
+	DelegateToOpenDoor.BindUFunction(this,"TimerOpenDoor",TimerToOpenDoor);
 	OwnUcharacterMovement = PawnAi->FindComponentByClass<UCharacterMovementComponent>();
 
 	PawnAi->BoxCollisionHide->OnComponentBeginOverlap.AddDynamic(this,&AHAI_Controller::BeginOverlapHidingPlace);
@@ -131,7 +132,6 @@ void AHAI_Controller::OnPawnDetected(AActor* SensedActor, FAIStimulus Stimulus)
 				if(Player->PlayerMovement != EPlayerMovement::Hide)
 				{
 					EnemyState = EEnemyState::Detected;
-					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Find!"));	
 				}else
 				{
 					//if player hide in front of enemy
@@ -207,7 +207,6 @@ void AHAI_Controller::MoveToSound()
 void AHAI_Controller::LookFor()
 {
 	//StopMovement();
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("LookFor!"));
 	if(HidingPlaceToCheck.Num() > 0)
 	{
 		ObjectToCheck = HidingPlaceToCheck.Pop();
@@ -228,7 +227,6 @@ void AHAI_Controller::CheckHide()
 	if(HaiPosition.Equals(PlaceToCheck,50.f))
 	{
 		EnemyState = EEnemyState::CheckInsideHidePlace;
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("In Hiding place!"));
 	}
 }
 
@@ -249,7 +247,6 @@ void AHAI_Controller::CheckInsideHide()
 		{
 			FRotator endRotation = UKismetMathLibrary::FindLookAtRotation(GetPawn()->GetActorLocation(),PlaceToCheck);
 			SetControlRotation(endRotation);
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, TEXT("Open Door!"));
 			IOpenClose::Execute_Open(ObjectToCheck);
 			EnemyState = EEnemyState::CheckAround;
 			GetWorld()->GetTimerManager().SetTimer(TimerToLookingFor, DelegateToLookingFor,TimeInStateLookingFor/2,false);
@@ -265,33 +262,38 @@ void AHAI_Controller::CheckInsideHide()
 
 void AHAI_Controller::OpenDoor()
 {
-	FHitResult OutHit;
-	FVector CamLoc;
-	FRotator CamRot;
-
-	const FVector StartTrace = PawnAi->GetActorLocation(); // trace start is the camera location
-	FVector Direction = FVector::ZeroVector;
-	if(PawnMesh)
+	if(CanOpenDoor)
 	{
-		Direction = PawnMesh->GetRightVector();
+		FHitResult OutHit;
+		FVector CamLoc;
+		FRotator CamRot;
+
+		const FVector StartTrace = PawnAi->GetActorLocation(); // trace start is the camera location
+		FVector Direction = FVector::ZeroVector;
+		if(PawnMesh)
+		{
+			Direction = PawnMesh->GetRightVector();
+		}
+	
+		const FVector EndTrace = StartTrace + Direction * 100;
+
+		FCollisionQueryParams TraceParams;
+		TraceParams.AddIgnoredActor(this);
+		DrawDebugLine(GetWorld(),StartTrace,EndTrace, FColor::Green,false ,1,0,1);
+		bool hitTrace = GetWorld()->LineTraceSingleByChannel(OutHit, StartTrace,EndTrace, ECC_Visibility, TraceParams);
+		if(hitTrace)
+		{
+			if(OutHit.Actor != nullptr && OutHit.Actor->Tags.Contains("Door"))
+			{
+				IOpenClose::Execute_OpenWithTransform(OutHit.GetActor(),PawnAi->GetActorLocation());
+				StopMovement();
+				CanOpenDoor =false;
+				GetWorld()->GetTimerManager().SetTimer(TimerToOpenDoor,DelegateToOpenDoor,0.5f,false);
+			}
+		
+		}
 	}
 	
-	const FVector EndTrace = StartTrace + Direction * 100;
-
-	FCollisionQueryParams TraceParams;
-	TraceParams.AddIgnoredActor(this);
-	DrawDebugLine(GetWorld(),StartTrace,EndTrace, FColor::Green,false ,1,0,1);
-	bool hitTrace = GetWorld()->LineTraceSingleByChannel(OutHit, StartTrace,EndTrace, ECC_Visibility, TraceParams);
-	if(hitTrace)
-	{
-		if(OutHit.Actor != nullptr && OutHit.Actor->Tags.Contains("Door"))
-		{
-			IOpenClose::Execute_OpenWithTransform(OutHit.GetActor(),PawnAi->GetActorLocation());
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("Open"));
-			
-		}
-		
-	}
 }
 
 void AHAI_Controller::BeginOverlapHidingPlace(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
@@ -318,7 +320,7 @@ void AHAI_Controller::EndOverlapHidingPlace(UPrimitiveComponent* OverlappedComp,
 	}
 }
 
-
+#pragma region Timer
 
 void AHAI_Controller::TimerLookingFor(float LookforTime)
 {
@@ -326,9 +328,15 @@ void AHAI_Controller::TimerLookingFor(float LookforTime)
 	{
 		EnemyState = EEnemyState::LookFor;
 	}
-	
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("End look for!"));
+
 }
+
+void AHAI_Controller::TimerOpenDoor(float TimeToOpen)
+{
+	CanOpenDoor = true;
+}
+
+#pragma endregion Timer
 
 
 

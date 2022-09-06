@@ -7,7 +7,6 @@ class AGhostActor;
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Editor.h"
 #include "../World/HGameInstance.h"
 #include "LaPorteProject/Tools/GhostActor.h"
 #include "TimeComponent.generated.h"

@@ -27,6 +27,9 @@ class LAPORTEPROJECT_API AHAI_Controller : public AAIController
 {
 	GENERATED_BODY()
 
+protected:
+	bool CanOpenDoor = true;
+
 public:
 
 	AHAI_Controller();
@@ -54,9 +57,6 @@ public:
 	void MoveToSound();
 
 	UFUNCTION()
-	void TimerLookingFor(float LookforTime);
-
-	UFUNCTION()
 	void LookFor(); //Stop to see player find place to hide
 
 	UFUNCTION()
@@ -77,7 +77,12 @@ public:
 	UFUNCTION()
 	void EndOverlapHidingPlace(UPrimitiveComponent* OverlappedComp,AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	
+	//Timer
+	UFUNCTION()
+	void TimerLookingFor(float LookforTime);
+
+	UFUNCTION()
+	void TimerOpenDoor(float TimeToOpen);
 	
 	//Propriety
 	//Enemy Data
@@ -91,13 +96,16 @@ public:
 	//Timer
 	FTimerHandle TimerToLookingFor;
 	FTimerDelegate DelegateToLookingFor;
+
+	FTimerHandle TimerToOpenDoor;
+	FTimerDelegate DelegateToOpenDoor;
 	
 	//Sight
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category= AI)
-	float AISightRadius = 500.f;
+	float AISightRadius = 10.f;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category= AI)
-	float AILostSightRadius = 100.f;
+	float AILostSightRadius = 15.f;
 	
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category= AI)
 	float AISightFieldOfView = 120.f;

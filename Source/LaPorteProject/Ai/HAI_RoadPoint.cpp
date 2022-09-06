@@ -7,9 +7,11 @@
 AHAI_RoadPoint::AHAI_RoadPoint()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	BoxTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxTrigger"));
 	BoxTrigger->OnComponentBeginOverlap.AddDynamic(this, &AHAI_RoadPoint::OnAiEnter);
+	BoxTrigger->OnComponentEndOverlap.AddDynamic(this, &AHAI_RoadPoint::OnAiExit);
+
 }
 
 // Called when the game starts or when spawned
@@ -25,14 +27,13 @@ void AHAI_RoadPoint::Tick(float DeltaTime)
 
 }
 
-void AHAI_RoadPoint::OnAiExit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-	int32 OtherBodyIndex)
+void AHAI_RoadPoint::OnAiExit_Implementation(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,int32 OtherBodyIndex)
 {
 	AHAi* HorrorBot = nullptr;
 	if(OtherActor != nullptr)
 	{
 		HorrorBot = Cast<AHAi>(OtherActor);
-		if(HorrorBot != nullptr && HorrorBot->ActualRoad == PointManager && OtherComp != HorrorBot->BoxCollisionHide)
+		if(HorrorBot != nullptr && HorrorBot->ActualRoad == PointManager && OtherActor == HorrorBot)
 		{
 			isEnter = false;
 		}
@@ -45,7 +46,7 @@ void AHAI_RoadPoint::OnAiEnter_Implementation(UPrimitiveComponent* OverlapCompon
 	if(OtherActor != nullptr && !isEnter)
 	{
 		HorrorBot = Cast<AHAi>(OtherActor);
-		if(HorrorBot != nullptr && HorrorBot->ActualRoad == PointManager && OtherComponent != HorrorBot->BoxCollisionHide)
+		if(HorrorBot != nullptr && HorrorBot->ActualRoad == PointManager && OtherActor == HorrorBot)
 		{
 			HorrorBot->ActualRoad->NextPoint();
 			isEnter = true;
