@@ -3,6 +3,8 @@
 
 #include "HAI_RoadPoint.h"
 
+#include "Components/CapsuleComponent.h"
+
 // Sets default values
 AHAI_RoadPoint::AHAI_RoadPoint()
 {
@@ -33,7 +35,7 @@ void AHAI_RoadPoint::OnAiExit_Implementation(UPrimitiveComponent* OverlappedComp
 	if(OtherActor != nullptr)
 	{
 		HorrorBot = Cast<AHAi>(OtherActor);
-		if(HorrorBot != nullptr && HorrorBot->ActualRoad == PointManager && OtherActor == HorrorBot)
+		if(HorrorBot != nullptr && HorrorBot->ActualRoad == PointManager && OtherActor == HorrorBot && OtherComp == HorrorBot->GetRootComponent())
 		{
 			isEnter = false;
 		}
@@ -46,7 +48,7 @@ void AHAI_RoadPoint::OnAiEnter_Implementation(UPrimitiveComponent* OverlapCompon
 	if(OtherActor != nullptr && !isEnter)
 	{
 		HorrorBot = Cast<AHAi>(OtherActor);
-		if(HorrorBot != nullptr && HorrorBot->ActualRoad == PointManager && OtherActor == HorrorBot)
+		if(HorrorBot != nullptr && HorrorBot->ActualRoad == PointManager && OtherActor == HorrorBot && OtherComponent == HorrorBot->GetRootComponent())
 		{
 			HorrorBot->ActualRoad->NextPoint();
 			isEnter = true;

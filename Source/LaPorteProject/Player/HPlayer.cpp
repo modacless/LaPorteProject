@@ -192,7 +192,7 @@ void AHPlayer::ChangeStateMovement(const EPlayerMovement State)
 void AHPlayer::TurnAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
-	if(PlayerMovement != EPlayerMovement::Watch && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die)
+	if(PlayerMovement != EPlayerMovement::Watch && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die && PlayerMovement != EPlayerMovement::Hide)
 	{
 		AddControllerYawInput(Rate  * GetWorld()->GetDeltaSeconds() * CameraRotationSpeed);
 	}
@@ -203,7 +203,7 @@ void AHPlayer::LookUpAtRate(float Rate)
 {
 	TurnRate = Rate;
 	// calculate delta for this frame from the rate information
-	if(PlayerMovement != EPlayerMovement::Watch && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die)
+	if(PlayerMovement != EPlayerMovement::Watch && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die && PlayerMovement != EPlayerMovement::Hide)
 	{
 		AddControllerPitchInput(Rate  * GetWorld()->GetDeltaSeconds() * CameraRotationSpeed);
 	}
