@@ -8,3 +8,4 @@ void AHPlayer_Controller::LookWatchRotation(float LerpValue, FRotator StartRotat
 	//SetWorldRotation(FMath::Lerp(FQuat(CameraComp->GetComponentRotation()),FQuat(GoalTransformCamera.GetRotation()),Value);
 	//SetControlRotation(FMath::Lerp(StartRotation,GoalRotation,LerpValue));
 }
+

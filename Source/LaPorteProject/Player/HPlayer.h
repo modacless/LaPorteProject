@@ -2,6 +2,7 @@
 
 #pragma once
 #include "CoreMinimal.h"
+#include "GenericTeamAgentInterface.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "Camera/CameraComponent.h"
@@ -26,7 +27,7 @@ enum class EPlayerMovement : uint8
 };
 
 UCLASS()
-class LAPORTEPROJECT_API AHPlayer : public ACharacter
+class LAPORTEPROJECT_API AHPlayer : public ACharacter, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -36,6 +37,10 @@ public:
 
 private:
 
+	FGenericTeamId TeamId;
+ 
+	virtual FGenericTeamId GetGenericTeamId() const override;
+	
 	//Timeline
 	FOnTimelineFloat UpdateFunctionFloatCameraTimeLine;
 	
