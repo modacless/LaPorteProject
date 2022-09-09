@@ -10,13 +10,14 @@
  * 
  */
 UCLASS()
-class LAPORTEPROJECT_API AHPlayer_Controller : public APlayerController
+class LAPORTEPROJECT_API AHPlayer_Controller : public APlayerController 
 {
 	GENERATED_BODY()
 
 public:
 	UFUNCTION()
-	void LookWatchRotation(float LerpValue,FRotator StartRotation ,FRotator GoalRotation);
 	
+	
+	void LookWatchRotation(float LerpValue,FRotator StartRotation ,FRotator GoalRotation);
 	
 };
