@@ -48,7 +48,8 @@ void AHAI_Controller::BeginPlay()
 {
 	Super::BeginPlay();
 	PawnAi = Cast<AHAi>(GetPawn());
-	PawnAi->BoxCollisionHide->SetBoxExtent(FVector(AISightRadius,AISightRadius,64));
+	//PawnAi->BoxCollisionHide->SetBoxExtent(FVector(AISightRadius,AISightRadius,64));
+	PawnAi->BoxCollisionHide->SetBoxExtent(FVector(500,500,64));
 	EnemyState = EEnemyState::Road;
 	APlayer = UGameplayStatics::GetPlayerCharacter(GetWorld(),0);
 	DelegateToLookingFor.BindUFunction(this,"TimerLookingFor",TimeInStateLookingFor);

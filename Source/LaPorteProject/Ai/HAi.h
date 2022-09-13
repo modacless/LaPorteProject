@@ -52,4 +52,5 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	UBoxComponent* BoxCollisionHide = nullptr;
 	
+	
 };

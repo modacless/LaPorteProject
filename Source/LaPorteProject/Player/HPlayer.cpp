@@ -27,7 +27,14 @@ AHPlayer::AHPlayer()
 	CameraLookAtWatchLocation->SetupAttachment(GetMesh());
 	CameraOriginLocation->SetupAttachment(GetMesh());
 	//CameraComp->SetupAttachment(GetMesh(),"spine_03Socket");
+
+
 	
+}
+
+FGenericTeamId AHPlayer::GetGenericTeamId() const
+{
+	return TeamId;
 }
 
 // Called when the game starts or when spawned
@@ -42,7 +49,7 @@ void AHPlayer::BeginPlay()
 	{
 		UE_LOG(LogTemp,Fatal,TEXT("No game instance found"))
 	}
-	
+	TeamId = FGenericTeamId(0);
 }
 
 // Called every frame
@@ -192,7 +199,7 @@ void AHPlayer::ChangeStateMovement(const EPlayerMovement State)
 void AHPlayer::TurnAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
-	if(PlayerMovement != EPlayerMovement::Watch && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die)
+	if(PlayerMovement != EPlayerMovement::Watch && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die && PlayerMovement != EPlayerMovement::Hide)
 	{
 		AddControllerYawInput(Rate  * GetWorld()->GetDeltaSeconds() * CameraRotationSpeed);
 	}
@@ -203,7 +210,7 @@ void AHPlayer::LookUpAtRate(float Rate)
 {
 	TurnRate = Rate;
 	// calculate delta for this frame from the rate information
-	if(PlayerMovement != EPlayerMovement::Watch && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die)
+	if(PlayerMovement != EPlayerMovement::Watch && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die && PlayerMovement != EPlayerMovement::Hide)
 	{
 		AddControllerPitchInput(Rate  * GetWorld()->GetDeltaSeconds() * CameraRotationSpeed);
 	}
