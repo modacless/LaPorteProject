@@ -95,7 +95,7 @@ void AHPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 #pragma region Movement
 void AHPlayer::MoveForward(float Value)
 {
-	if(PlayerMovement != EPlayerMovement::Hide && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die)
+	if(PlayerMovement != EPlayerMovement::Hide && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die && PlayerMovement != EPlayerMovement::Climb)
 	{
 		const FRotator  Rotation = Controller->GetControlRotation();
 		const FRotator  Direction(0.f,Rotation.Yaw, 0.f);
@@ -108,7 +108,7 @@ void AHPlayer::MoveForward(float Value)
 
 void AHPlayer::MoveRight(float Value)
 {
-	if(PlayerMovement != EPlayerMovement::Hide && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die)
+	if(PlayerMovement != EPlayerMovement::Hide && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die && PlayerMovement != EPlayerMovement::Climb)
 	{
 		const FRotator  Rotation = Controller->GetControlRotation();
 		const FRotator  Direction(0.f,Rotation.Yaw, 0.f);
