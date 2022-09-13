@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "HPlayer.h"
-
 #include "DrawDebugHelpers.h"
 #include "HPlayer_Controller.h"
 #include "Components/ArrowComponent.h"
@@ -188,6 +187,9 @@ void AHPlayer::ChangeStateMovement(const EPlayerMovement State)
 	case EPlayerMovement::Hide:
 		OwnUcharacterMovement->MaxWalkSpeed = 0;
 		break;
+	case EPlayerMovement::Climb:
+		
+		break;
 	default: ;
 	}
 
@@ -199,7 +201,7 @@ void AHPlayer::ChangeStateMovement(const EPlayerMovement State)
 void AHPlayer::TurnAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
-	if(PlayerMovement != EPlayerMovement::Watch && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die && PlayerMovement != EPlayerMovement::Hide)
+	if(PlayerMovement != EPlayerMovement::Watch && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die && PlayerMovement != EPlayerMovement::Hide && PlayerMovement != EPlayerMovement::Climb)
 	{
 		AddControllerYawInput(Rate  * GetWorld()->GetDeltaSeconds() * CameraRotationSpeed);
 	}
@@ -210,7 +212,7 @@ void AHPlayer::LookUpAtRate(float Rate)
 {
 	TurnRate = Rate;
 	// calculate delta for this frame from the rate information
-	if(PlayerMovement != EPlayerMovement::Watch && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die && PlayerMovement != EPlayerMovement::Hide)
+	if(PlayerMovement != EPlayerMovement::Watch && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die && PlayerMovement != EPlayerMovement::Hide && PlayerMovement != EPlayerMovement::Climb)
 	{
 		AddControllerPitchInput(Rate  * GetWorld()->GetDeltaSeconds() * CameraRotationSpeed);
 	}

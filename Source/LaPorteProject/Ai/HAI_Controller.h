@@ -90,7 +90,7 @@ public:
 	float EnemyWalkSpeed = 300.f;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	float EnemyRunSpeed = 600.f;
+	float EnemyRunSpeed = 450.f;
 	
 	//Perception
 	//Timer
@@ -102,10 +102,10 @@ public:
 	
 	//Sight
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category= AI)
-	float AISightRadius = 10.f;
+	float AISightRadius = 500.f;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category= AI)
-	float AILostSightRadius = 15.f;
+	float AILostSightRadius = 550.f;
 	
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category= AI)
 	float AISightFieldOfView = 120.f;
