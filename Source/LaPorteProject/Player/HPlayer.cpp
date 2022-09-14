@@ -103,6 +103,14 @@ void AHPlayer::MoveForward(float Value)
 		
 		AddMovementInput(ForwardDirection,Value);
 	}
+
+	if(PlayerMovement == EPlayerMovement::Climb)
+	{
+		const FRotator  Rotation = Controller->GetControlRotation();
+		const FRotator  Direction(0.f,Rotation.Yaw, 0.f);
+		const FVector UpDirection = FRotationMatrix(Direction).GetUnitAxis(EAxis::Z);
+		AddMovementInput(UpDirection,Value);
+	}
 	
 }
 
@@ -114,6 +122,12 @@ void AHPlayer::MoveRight(float Value)
 		const FRotator  Direction(0.f,Rotation.Yaw, 0.f);
 		const FVector RightDirection = FRotationMatrix(Direction).GetUnitAxis(EAxis::Y);
 		AddMovementInput(RightDirection,Value);
+	}
+
+	
+	if(PlayerMovement == EPlayerMovement::Climb)
+	{
+		
 	}
 }
 
@@ -188,7 +202,7 @@ void AHPlayer::ChangeStateMovement(const EPlayerMovement State)
 		OwnUcharacterMovement->MaxWalkSpeed = 0;
 		break;
 	case EPlayerMovement::Climb:
-		
+
 		break;
 	default: ;
 	}
@@ -201,7 +215,7 @@ void AHPlayer::ChangeStateMovement(const EPlayerMovement State)
 void AHPlayer::TurnAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
-	if(PlayerMovement != EPlayerMovement::Watch && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die && PlayerMovement != EPlayerMovement::Hide && PlayerMovement != EPlayerMovement::Climb)
+	if(PlayerMovement != EPlayerMovement::Watch && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die && PlayerMovement != EPlayerMovement::Hide)
 	{
 		AddControllerYawInput(Rate  * GetWorld()->GetDeltaSeconds() * CameraRotationSpeed);
 	}
@@ -212,7 +226,7 @@ void AHPlayer::LookUpAtRate(float Rate)
 {
 	TurnRate = Rate;
 	// calculate delta for this frame from the rate information
-	if(PlayerMovement != EPlayerMovement::Watch && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die && PlayerMovement != EPlayerMovement::Hide && PlayerMovement != EPlayerMovement::Climb)
+	if(PlayerMovement != EPlayerMovement::Watch && PlayerMovement != EPlayerMovement::Use && PlayerMovement != EPlayerMovement::Die && PlayerMovement != EPlayerMovement::Hide)
 	{
 		AddControllerPitchInput(Rate  * GetWorld()->GetDeltaSeconds() * CameraRotationSpeed);
 	}

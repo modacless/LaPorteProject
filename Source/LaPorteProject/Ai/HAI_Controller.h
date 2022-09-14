@@ -102,10 +102,10 @@ public:
 	
 	//Sight
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category= AI)
-	float AISightRadius = 500.f;
+	float AISightRadius = 5.f;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category= AI)
-	float AILostSightRadius = 550.f;
+	float AILostSightRadius = 10.f;
 	
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category= AI)
 	float AISightFieldOfView = 120.f;
