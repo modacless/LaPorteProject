@@ -21,12 +21,13 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	bool isEnter;
-
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	
+	UPROPERTY()
+	bool IsEnter;
+	
 	UPROPERTY()
 	UBoxComponent* BoxTrigger;
 
@@ -41,5 +42,6 @@ public:
 	void OnAiEnter(UPrimitiveComponent* OverlapComponent,AActor* OtherActor,UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult);
 	UFUNCTION(BlueprintNativeEvent)
 	void OnAiExit(UPrimitiveComponent* OverlappedComp,AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
+	UFUNCTION(BlueprintCallable,BlueprintImplementableEvent)
+	void AiEnterDelay(AActor* OtherActor);
 };

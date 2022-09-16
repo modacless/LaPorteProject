@@ -54,6 +54,7 @@ void AHAI_Controller::BeginPlay()
 	APlayer = UGameplayStatics::GetPlayerCharacter(GetWorld(),0);
 	DelegateToLookingFor.BindUFunction(this,"TimerLookingFor",TimeInStateLookingFor);
 	DelegateToOpenDoor.BindUFunction(this,"TimerOpenDoor",TimerToOpenDoor);
+	DelegateToGoBackToRoad.BindUFunction(this,"TimerBackToRoad",TimeBeforeGoingBackRoad);
 	OwnUcharacterMovement = PawnAi->FindComponentByClass<UCharacterMovementComponent>();
 
 	PawnAi->BoxCollisionHide->OnComponentBeginOverlap.AddDynamic(this,&AHAI_Controller::BeginOverlapHidingPlace);
@@ -121,6 +122,7 @@ void AHAI_Controller::OnPawnDetected(AActor* SensedActor, FAIStimulus Stimulus)
 		{
 			EnemyState = EEnemyState::HearSound;
 			SoundPosition = Stimulus.StimulusLocation;
+			GetWorld()->GetTimerManager().SetTimer(TimerToGoBackToRoad, DelegateToGoBackToRoad,TimeBeforeGoingBackRoad,false);
 		}
 
 		//Can see player
@@ -335,6 +337,14 @@ void AHAI_Controller::TimerLookingFor(float LookforTime)
 void AHAI_Controller::TimerOpenDoor(float TimeToOpen)
 {
 	CanOpenDoor = true;
+}
+
+void AHAI_Controller::TimerBackToRoad(float timeBeforeRoad)
+{
+	if(EnemyState == EEnemyState::HearSound)
+	{
+		EnemyState = EEnemyState::Road;
+	}
 }
 
 #pragma endregion Timer

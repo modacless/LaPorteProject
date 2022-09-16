@@ -83,6 +83,9 @@ public:
 
 	UFUNCTION()
 	void TimerOpenDoor(float TimeToOpen);
+
+	UFUNCTION()
+	void TimerBackToRoad(float timeBeforeRoad);
 	
 	//Propriety
 	//Enemy Data
@@ -100,12 +103,15 @@ public:
 	FTimerHandle TimerToOpenDoor;
 	FTimerDelegate DelegateToOpenDoor;
 	
+	FTimerHandle TimerToGoBackToRoad;
+	FTimerDelegate DelegateToGoBackToRoad;
+	
 	//Sight
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category= AI)
-	float AISightRadius = 550.f;
+	float AISightRadius = 5.f;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category= AI)
-	float AILostSightRadius = 550.f;
+	float AILostSightRadius = 10.f;
 	
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category= AI)
 	float AISightFieldOfView = 120.f;
@@ -131,6 +137,8 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	float TimeInStateLookingFor = 5.f; // Time in second during ai searching player
+	UPROPERTY(EditAnywhere)
+	float TimeBeforeGoingBackRoad = 10.f;
 
 	//Component
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category= AI)

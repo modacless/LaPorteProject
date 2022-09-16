@@ -329,7 +329,13 @@ void AHPlayer::PickupObject()
 		{
 			ObjectInHand->Execute_StopInterract(ObjectInHand->_getUObject());
 		}
-
+		
+		if(PlayerMovement == EPlayerMovement::Hide)
+		{
+			AAInterractable *InterractableObject = Cast<AAInterractable>(HideInObject);
+			AAInterractable::Execute_Interract(InterractableObject);
+			PlayerMovement = EPlayerMovement::Walk;
+		}
 	}
 }
 

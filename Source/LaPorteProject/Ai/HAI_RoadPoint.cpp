@@ -37,7 +37,7 @@ void AHAI_RoadPoint::OnAiExit_Implementation(UPrimitiveComponent* OverlappedComp
 		HorrorBot = Cast<AHAi>(OtherActor);
 		if(HorrorBot != nullptr && HorrorBot->ActualRoad == PointManager && OtherActor == HorrorBot && OtherComp == HorrorBot->GetRootComponent())
 		{
-			isEnter = false;
+			IsEnter = false;
 		}
 	}
 }
@@ -45,14 +45,16 @@ void AHAI_RoadPoint::OnAiExit_Implementation(UPrimitiveComponent* OverlappedComp
 void AHAI_RoadPoint::OnAiEnter_Implementation(UPrimitiveComponent* OverlapComponent,AActor* OtherActor,UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult)
 {
 	AHAi* HorrorBot = nullptr;
-	if(OtherActor != nullptr && !isEnter)
+	if(OtherActor != nullptr && !IsEnter)
 	{
 		HorrorBot = Cast<AHAi>(OtherActor);
 		if(HorrorBot != nullptr && HorrorBot->ActualRoad == PointManager && OtherActor == HorrorBot && OtherComponent == HorrorBot->GetRootComponent())
 		{
 			HorrorBot->ActualRoad->NextPoint();
-			isEnter = true;
+			IsEnter = true;
+			AiEnterDelay(OtherActor);
 		}
 	}
 }
+
 
