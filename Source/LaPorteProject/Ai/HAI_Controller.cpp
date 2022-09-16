@@ -99,7 +99,7 @@ void AHAI_Controller::Tick(float DeltaSeconds)
 	}
 
 	OpenDoor();
-	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, *UEnum::GetValueAsString(EnemyState));
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, *UEnum::GetValueAsString(EnemyState));
 }
 
 FRotator AHAI_Controller::GetControlRotation() const
