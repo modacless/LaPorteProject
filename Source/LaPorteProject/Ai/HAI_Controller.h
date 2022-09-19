@@ -70,13 +70,7 @@ public:
 
 	UFUNCTION()
 	void OpenDoor();
-
-	UFUNCTION()
-	void BeginOverlapHidingPlace(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION()
-	void EndOverlapHidingPlace(UPrimitiveComponent* OverlappedComp,AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
+	
 	//Timer
 	UFUNCTION()
 	void TimerLookingFor(float LookforTime);
@@ -107,17 +101,15 @@ public:
 	FTimerDelegate DelegateToGoBackToRoad;
 	
 	//Sight
-	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category= AI)
-	float AISightRadius = 5.f;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category= AI)
+	float AISightRadius = 750.f;
 
-	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category= AI)
-	float AILostSightRadius = 10.f;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category= AI)
+	float AILostSightRadius = 800.f;
 	
-	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category= AI)
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category= AI)
 	float AISightFieldOfView = 120.f;
-
-	UPROPERTY()
-	TArray<AAInterractable*> HidingPlaceToCheck;
+	
 	UPROPERTY()
 	AActor* ObjectToCheck;
 
@@ -139,14 +131,10 @@ public:
 	float TimeInStateLookingFor = 5.f; // Time in second during ai searching player
 	UPROPERTY(EditAnywhere)
 	float TimeBeforeGoingBackRoad = 10.f;
-
-	//Component
-	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category= AI)
-	UAISenseConfig_Sight* AiSenseConfig;
-
-	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category= AI)
-	UAISenseConfig_Hearing* AiHearingConfig;
-
+	
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category= AI)
+	UAIPerceptionComponent* AiPerception;
+	
 	UPROPERTY()
 	class AHAi* PawnAi;
 
@@ -156,7 +144,7 @@ public:
 	UPROPERTY()
 	AActor* APlayer;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	UCharacterMovementComponent *OwnUcharacterMovement;
 	
 	

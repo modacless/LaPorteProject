@@ -4,11 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Perception/AISenseConfig_Sight.h"
-#include "Perception/AIPerceptionComponent.h"
 #include "AIController.h"
 #include "HAI_Controller.h"
 #include "HAI_RoadPointManager.h"
+#include "../TimeObject/AInterractable.h"
 #include "HAi.generated.h"
 
 UCLASS()
@@ -51,6 +50,13 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	UBoxComponent* BoxCollisionHide = nullptr;
-	
+
+	UFUNCTION()
+	void BeginOverlapHidingPlace(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	void EndOverlapHidingPlace(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UPROPERTY()
+	TArray<AAInterractable*> HidingPlaceToCheck;
 	
 };

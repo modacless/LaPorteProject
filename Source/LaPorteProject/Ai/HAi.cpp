@@ -24,6 +24,8 @@ AHAi::AHAi()
 void AHAi::BeginPlay()
 {
 	Super::BeginPlay();
+	BoxCollisionHide->OnComponentBeginOverlap.AddDynamic(this,&AHAi::BeginOverlapHidingPlace);
+	BoxCollisionHide->OnComponentEndOverlap.AddDynamic(this,&AHAi::EndOverlapHidingPlace);
 	
 }
 
@@ -49,6 +51,30 @@ void AHAi::ChangeToNextRoad()
 		{
 			ActualRoad = ActualRoad->NextRoad;
 		}
+	}
+}
+
+void AHAi::BeginOverlapHidingPlace(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+											  UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	AAInterractable* obj = Cast<AAInterractable>(OtherActor);
+	AHAI_Controller *PawnController = Cast<AHAI_Controller>(GetController());
+	if(obj != nullptr && obj->Tags.Contains("HidingPlace") && !HidingPlaceToCheck.Contains(obj))
+	{
+		HidingPlaceToCheck.AddUnique(obj);
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("Add Object!"));
+	}
+}
+
+void AHAi::EndOverlapHidingPlace(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	AAInterractable* obj = Cast<AAInterractable>(OtherActor);
+
+	if(obj != nullptr && obj->Tags.Contains("HidingPlace") && HidingPlaceToCheck.Contains(obj))
+	{
+		HidingPlaceToCheck.Remove(obj);
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("Delete Object!"));
 	}
 }
 

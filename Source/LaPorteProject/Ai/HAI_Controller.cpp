@@ -6,47 +6,27 @@
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "LaPorteProject/TimeObject/OpenClose.h"
+#include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Hearing.h"
 
 
 AHAI_Controller::AHAI_Controller()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	SetPerceptionComponent(*CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Perception component")));
-	AiSenseConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sensor Config"));
-	AiHearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing Component"));
 	
-	GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this,&AHAI_Controller::OnPawnDetected);
-	GetPerceptionComponent()->SetDominantSense(*AiSenseConfig->GetSenseImplementation());
-
-	if(AiSenseConfig)
-	{
-		AILostSightRadius += AISightRadius;
-		
-		AiSenseConfig->SightRadius = AISightRadius;
-		AiSenseConfig->LoseSightRadius = AILostSightRadius;
-		AiSenseConfig->PeripheralVisionAngleDegrees = AISightFieldOfView;
-		AiSenseConfig->DetectionByAffiliation.bDetectEnemies = true;
-		AiSenseConfig->DetectionByAffiliation.bDetectNeutrals = true;
-		AiSenseConfig->DetectionByAffiliation.bDetectFriendlies = true;
-	}
-
-	if(AiHearingConfig)
-	{
-		AiHearingConfig->HearingRange = AIHearingRadius;
-		AiHearingConfig->DetectionByAffiliation.bDetectEnemies = true;
-		AiHearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
-		AiHearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
-		
-	}
-	GetPerceptionComponent()->ConfigureSense(*AiSenseConfig);
-	GetPerceptionComponent()->ConfigureSense(*AiHearingConfig);
+	
+	//AiPerception->ConfigureSense(AiSenseConfig)
+	SetPerceptionComponent(*AiPerception);
 	
 }
 
 void AHAI_Controller::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	AiPerception = FindComponentByClass<UAIPerceptionComponent>();
+	AiPerception->OnTargetPerceptionUpdated.AddDynamic(this,&AHAI_Controller::OnPawnDetected);
+	
 	PawnAi = Cast<AHAi>(GetPawn());
 	//PawnAi->BoxCollisionHide->SetBoxExtent(FVector(AISightRadius,AISightRadius,64));
 	PawnAi->BoxCollisionHide->SetBoxExtent(FVector(500,500,64));
@@ -57,10 +37,8 @@ void AHAI_Controller::BeginPlay()
 	DelegateToGoBackToRoad.BindUFunction(this,"TimerBackToRoad",TimeBeforeGoingBackRoad);
 	OwnUcharacterMovement = PawnAi->FindComponentByClass<UCharacterMovementComponent>();
 
-	PawnAi->BoxCollisionHide->OnComponentBeginOverlap.AddDynamic(this,&AHAI_Controller::BeginOverlapHidingPlace);
-	PawnAi->BoxCollisionHide->OnComponentEndOverlap.AddDynamic(this,&AHAI_Controller::EndOverlapHidingPlace);
-
 	PawnMesh = PawnAi->GetMesh();
+	
 }
 
 void AHAI_Controller::Tick(float DeltaSeconds)
@@ -100,7 +78,7 @@ void AHAI_Controller::Tick(float DeltaSeconds)
 	}
 
 	OpenDoor();
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, *UEnum::GetValueAsString(EnemyState));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, *UEnum::GetValueAsString(EnemyState));
 }
 
 FRotator AHAI_Controller::GetControlRotation() const
@@ -115,50 +93,57 @@ FRotator AHAI_Controller::GetControlRotation() const
 
 void AHAI_Controller::OnPawnDetected(AActor* SensedActor, FAIStimulus Stimulus)
 {
-	if(Stimulus.WasSuccessfullySensed())
+	if(AiPerception->GetSenseConfig(Stimulus.Type))
 	{
-		//Can hear player
-		if(Stimulus.Type == AiHearingConfig->GetSenseID() && EnemyState != EEnemyState::Detected)
+		if(Stimulus.WasSuccessfullySensed())
 		{
-			EnemyState = EEnemyState::HearSound;
-			SoundPosition = Stimulus.StimulusLocation;
-			GetWorld()->GetTimerManager().SetTimer(TimerToGoBackToRoad, DelegateToGoBackToRoad,TimeBeforeGoingBackRoad,false);
-		}
-
-		//Can see player
-		if(Stimulus.Type == AiSenseConfig->GetSenseID())
-		{
-			const AHPlayer* Player = Cast<AHPlayer>(SensedActor);
-			if(Player != nullptr)
+			//Can hear player
+			if(Stimulus.Type.Name == "Default__AISense_Hearing" && EnemyState != EEnemyState::Detected)
 			{
-				//if player is not hide
-				if(Player->PlayerMovement != EPlayerMovement::Hide)
+				EnemyState = EEnemyState::HearSound;
+				SoundPosition = Stimulus.StimulusLocation;
+				GetWorld()->GetTimerManager().SetTimer(TimerToGoBackToRoad, DelegateToGoBackToRoad,TimeBeforeGoingBackRoad,false);
+			}
+
+			//Can see player
+			if(Stimulus.Type.Name == "Default__AISense_Sight")
+			{
+				const AHPlayer* Player = Cast<AHPlayer>(SensedActor);
+				if(Player != nullptr)
 				{
-					EnemyState = EEnemyState::Detected;
-				}else
-				{
-					//if player hide in front of enemy
-					if(EnemyState == EEnemyState::Detected)
+					//if player is not hide
+					if(Player->PlayerMovement != EPlayerMovement::Hide)
 					{
-						EnemyState = EEnemyState::LookFor;
+						EnemyState = EEnemyState::Detected;
 					}else
 					{
+						//if player hide in front of enemy
+						if(EnemyState == EEnemyState::Detected)
+						{
+							EnemyState = EEnemyState::LookFor;
+						}else
+						{
 						
-					}
+						}
 
+					}
 				}
 			}
+		}else
+		{
+			const AHPlayer* Player = Cast<AHPlayer>(SensedActor);
+			if(Player != nullptr && !Player->IsHide)
+			{
+				GetWorld()->GetTimerManager().SetTimer(TimerToLookingFor, DelegateToLookingFor,TimeInStateLookingFor,false);
+				EnemyState = EEnemyState::CheckAround;
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("LookFor!"));
+			}
+		
 		}
+	
 	}else
 	{
-		const AHPlayer* Player = Cast<AHPlayer>(SensedActor);
-		if(Player != nullptr && !Player->IsHide)
-		{
-			GetWorld()->GetTimerManager().SetTimer(TimerToLookingFor, DelegateToLookingFor,TimeInStateLookingFor,false);
-			EnemyState = EEnemyState::CheckAround;
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("LookFor!"));
-		}
-		
+		UE_LOG(LogTemp, Warning, TEXT("My Name: %s"), *Stimulus.Type.Name.ToString());
 	}
 	
 }
@@ -210,9 +195,9 @@ void AHAI_Controller::MoveToSound()
 void AHAI_Controller::LookFor()
 {
 	//StopMovement();
-	if(HidingPlaceToCheck.Num() > 0)
+	if(PawnAi->HidingPlaceToCheck.Num() > 0)
 	{
-		ObjectToCheck = HidingPlaceToCheck.Pop();
+		ObjectToCheck = PawnAi->HidingPlaceToCheck.Pop();
 		EnemyState = EEnemyState::CheckHide;
 	}else
 	{
@@ -299,29 +284,7 @@ void AHAI_Controller::OpenDoor()
 	
 }
 
-void AHAI_Controller::BeginOverlapHidingPlace(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-                                              UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	AAInterractable* obj = Cast<AAInterractable>(OtherActor);
-	
-	if(obj != nullptr && obj->Tags.Contains("HidingPlace") && !HidingPlaceToCheck.Contains(obj))
-	{
-		HidingPlaceToCheck.AddUnique(obj);
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("Add Object!"));
-	}
-}
 
-void AHAI_Controller::EndOverlapHidingPlace(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	AAInterractable* obj = Cast<AAInterractable>(OtherActor);
-
-	if(obj != nullptr && obj->Tags.Contains("HidingPlace") && HidingPlaceToCheck.Contains(obj))
-	{
-		HidingPlaceToCheck.Remove(obj);
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("Delete Object!"));
-	}
-}
 
 #pragma region Timer
 
@@ -348,7 +311,6 @@ void AHAI_Controller::TimerBackToRoad(float timeBeforeRoad)
 }
 
 #pragma endregion Timer
-
 
 
 
