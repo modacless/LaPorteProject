@@ -48,7 +48,7 @@ void AHAI_RoadPoint::OnAiEnter_Implementation(UPrimitiveComponent* OverlapCompon
 	if(OtherActor != nullptr && !IsEnter)
 	{
 		HorrorBot = Cast<AHAi>(OtherActor);
-		if(HorrorBot != nullptr && HorrorBot->ActualRoad == PointManager && OtherActor == HorrorBot && OtherComponent == HorrorBot->GetRootComponent())
+		if(HorrorBot != nullptr && HorrorBot->ActualRoad == PointManager && OtherActor == HorrorBot && OtherComponent == HorrorBot->GetRootComponent() && Cast<AHAI_Controller>(HorrorBot->GetController())->EnemyState == EEnemyState::Road)
 		{
 			HorrorBot->ActualRoad->NextPoint();
 			IsEnter = true;
