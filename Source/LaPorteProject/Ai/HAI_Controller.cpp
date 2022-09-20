@@ -14,8 +14,6 @@ AHAI_Controller::AHAI_Controller()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	
-	
-	//AiPerception->ConfigureSense(AiSenseConfig)
 	SetPerceptionComponent(*AiPerception);
 	
 }
@@ -78,7 +76,7 @@ void AHAI_Controller::Tick(float DeltaSeconds)
 	}
 
 	OpenDoor();
-	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, *UEnum::GetValueAsString(EnemyState));
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, *UEnum::GetValueAsString(EnemyState));
 }
 
 FRotator AHAI_Controller::GetControlRotation() const
@@ -211,10 +209,11 @@ void AHAI_Controller::CheckHide()
 	FVector PlaceToCheck = IOpenClose::Execute_GetPositionForInterraction(ObjectToCheck);
 	MoveToLocation(PlaceToCheck);
 	PlaceToCheck.Z = 0;
-	const FVector HaiPosition(PawnAi->GetActorLocation().X,PawnAi->GetActorLocation().Y,0) ;
-	if(HaiPosition.Equals(PlaceToCheck,50.f))
-	{
+	const FVector HaiPosition(PawnAi->GetMesh()->GetComponentLocation().X,PawnAi->GetMesh()->GetComponentLocation().Y,0) ;
+	if(HaiPosition.Equals(PlaceToCheck,150))
+	{	
 		EnemyState = EEnemyState::CheckInsideHidePlace;
+		GetWorld()->GetTimerManager().SetTimer(TimerToLookingFor, DelegateToLookingFor,1.98f,false);
 	}
 }
 
@@ -236,8 +235,6 @@ void AHAI_Controller::CheckInsideHide()
 			FRotator endRotation = UKismetMathLibrary::FindLookAtRotation(GetPawn()->GetActorLocation(),PlaceToCheck);
 			SetControlRotation(endRotation);
 			IOpenClose::Execute_Open(ObjectToCheck);
-			EnemyState = EEnemyState::CheckAround;
-			GetWorld()->GetTimerManager().SetTimer(TimerToLookingFor, DelegateToLookingFor,TimeInStateLookingFor/2,false);
 
 			AHPlayer* Player = Cast<AHPlayer>(APlayer);
 			if(Player && Player->HideInObject == ObjectToCheck)
@@ -271,7 +268,7 @@ void AHAI_Controller::OpenDoor()
 		bool hitTrace = GetWorld()->LineTraceSingleByChannel(OutHit, StartTrace,EndTrace, ECC_Visibility, TraceParams);
 		if(hitTrace)
 		{
-			if(OutHit.Actor != nullptr && OutHit.Actor->Tags.Contains("Door"))
+			if(OutHit.Actor != nullptr && OutHit.Actor->Tags.Contains("Door") && EnemyState != EEnemyState::HearSound && CanOpenDoor)
 			{
 				IOpenClose::Execute_OpenWithTransform(OutHit.GetActor(),PawnAi->GetActorLocation());
 				StopMovement();
